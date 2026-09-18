@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -4472,12 +4472,22 @@
             input.style.fontSize = '10px';
             input.style.textAlign = 'center';
             input.style.outline = 'none';
+            if (!isKill) {
+              input.dataset.placement = 'true';
+              input.title = 'Enter placement rank (1-25) to auto-convert to placement points';
+            }
             input.onfocus = () => {
               input.style.borderColor = '#3b82f6';
               input.style.background = 'rgba(30, 58, 138, 0.4)';
               tr.classList.add('highlight-row');
             };
             input.onblur = () => {
+              if (input.dataset.placement === 'true') {
+                const normalized = normalizePlacementInput(input.value);
+                if (normalized !== input.value) {
+                  input.value = normalized;
+                }
+              }
               input.style.borderColor = s.isCurrent ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)';
               input.style.background = 'rgba(15,23,42,0.95)';
               tr.classList.remove('highlight-row');
@@ -4557,6 +4567,10 @@
               let pv = pInp ? pInp.value.trim().toUpperCase() : '';
               if (kv === 'NO SHOW' || kv === 'VOID') kv = '0';
               if (pv === 'NO SHOW' || pv === 'VOID') pv = '0';
+              if (pInp && pInp.dataset.placement === 'true') {
+                pv = normalizePlacementInput(pv);
+                if (pv === '') pv = '0';
+              }
               const kn = parseInt(kv, 10);
               const pn = parseInt(pv, 10);
               const mult = (scoringState && scoringState.killMultiplier) ? scoringState.killMultiplier : 2;
@@ -4568,7 +4582,15 @@
 
           for (let i = 0; i < sRoundsCount * 2; i++) {
             if (scoreInputs[i]) {
-              scoreInputs[i].addEventListener('input', updateRowTotal);
+              scoreInputs[i].addEventListener('input', () => {
+                if (scoreInputs[i].dataset.placement === 'true') {
+                  const normalized = normalizePlacementInput(scoreInputs[i].value);
+                  if (normalized !== scoreInputs[i].value) {
+                    scoreInputs[i].value = normalized;
+                  }
+                }
+                updateRowTotal();
+              });
             }
           }
         });
@@ -6638,17 +6660,19 @@
     }
 
     async function getBannedMatchInfo(clanName, sched = currentSched) {
-      if (!clanName || !clanName.trim()) return null;
+      const inputName = String(clanName || '').trim();
+      if (!inputName) return null;
 
-      let state = bannedState;
-      const hasItems = state && (
-        (state.noShow && state.noShow.length > 0) ||
-        (state.lateCancel && state.lateCancel.length > 0) ||
-        (state.perm && state.perm.length > 0) ||
-        (state.warning && state.warning.length > 0)
-      );
+      const ensureStateLoaded = async () => {
+        const hasItems = bannedState && (
+          (bannedState.noShow && bannedState.noShow.length > 0) ||
+          (bannedState.lateCancel && bannedState.lateCancel.length > 0) ||
+          (bannedState.perm && bannedState.perm.length > 0) ||
+          (bannedState.warning && bannedState.warning.length > 0)
+        );
 
-      if (!hasItems) {
+        if (hasItems) return;
+
         try {
           const key = typeof bannedTeamsConfigKey === 'function' ? bannedTeamsConfigKey(sched) : `banned_teams_list_${sched}`;
           let res = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.${key}`, { headers: supabaseHeaders() });
@@ -6684,7 +6708,50 @@
         } finally {
           renderBannedTables(true);
         }
+      };
+
+      await ensureStateLoaded();
+
+      const findMatch = (items, type, defaultDuration = '') => {
+        for (const item of items || []) {
+          if (!item) continue;
+          if (isBannedMatch(inputName, item)) {
+            const details = item.clan && item.team ? `${item.clan} - ${item.team}` : (item.team || item.clan || 'Unknown');
+            return {
+              isBanned: true,
+              isWarning: false,
+              type,
+              duration: item.duration || defaultDuration,
+              details
+            };
+          }
+        }
+        return null;
+      };
+
+      const noShowMatch = findMatch(bannedState.noShow, 'No Show', '5 Scrims');
+      if (noShowMatch) return noShowMatch;
+
+      const lateMatch = findMatch(bannedState.lateCancel, 'Late Cancel', '3 Scrims');
+      if (lateMatch) return lateMatch;
+
+      const permMatch = findMatch(bannedState.perm, 'Permanent Ban', 'Permanent');
+      if (permMatch) return permMatch;
+
+      for (const item of bannedState.warning || []) {
+        if (item && isBannedMatch(inputName, item)) {
+          const details = item.clan && item.team ? `${item.clan} - ${item.team}` : (item.team || item.clan || 'Warning');
+          return {
+            isBanned: false,
+            isWarning: true,
+            type: 'Warning',
+            duration: item.duration || '',
+            details
+          };
+        }
       }
+
+      return null;
     }
 
     function syncBannedTextareas() {
@@ -7126,6 +7193,17 @@
       // Standard competitive fallback
       const fallback = { 1: 15, 2: 12, 3: 10, 4: 8, 5: 6, 6: 4, 7: 2, 8: 1, 9: 1, 10: 1 };
       return fallback[rank] || 0;
+    }
+
+    function normalizePlacementInput(rawValue) {
+      const raw = String(rawValue ?? '').trim();
+      if (!raw) return '';
+      if (!/^\d+$/.test(raw)) return raw;
+      const rank = parseInt(raw, 10);
+      if (rank >= 1 && rank <= 25) {
+        return String(getPlacementPointsForRank(rank));
+      }
+      return raw;
     }
 
     async function loadSystemSettings() {

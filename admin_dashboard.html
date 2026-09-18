@@ -297,7 +297,6 @@
 
       0%,
       100% {
-        opacity: 1;
         transform: scale(1);
       }
 
@@ -306,7 +305,6 @@
         transform: scale(0.85);
       }
     }
-
     .sidebar-section-label {
       font-size: 9.5px;
       font-weight: 700;
@@ -2256,6 +2254,8 @@
                 <button id="refreshBtn" class="btn btn-ghost">Refresh</button>
                 <button id="adminReserveBtn" class="btn btn-reserve-admin">🛡️ Admin Reserve</button>
                 <button id="copySlotsBtn" class="btn btn-ghost">Copy Slots</button>
+                <button id="copyOpenSlotBtn" class="btn btn-update" style="background:#22c55e; border-color:#16a34a;">🔓 Copy Open Slot</button>
+                <button id="copyRoomBtn" class="btn btn-update" style="background:#0ea5e9; border-color:#0284c7;">🏠 Copy Room</button>
                 <button id="announceBtn" class="btn btn-update" style="background:#22c55e; border-color:#16a34a;">📢
                   Copy GC Announce</button>
                 <button id="resetBtnAdmin" class="btn btn-danger">Reset All Slots</button>
@@ -3057,12 +3057,9 @@
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap:22px; align-items:start;">
                   <!-- GC ANNOUNCEMENT TEMPLATE -->
                   <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:16px; min-height:100%;">
-                    <div style="font-size:12px; font-weight:700; color:#34d399; margin-bottom:8px;">GC Announcement Header Template</div>
-                    <textarea id="gcHeaderTemplate" rows="6" style="width:100%; min-height:160px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
-                    <div style="font-size:10px; color:#64748b; margin-top:4px;">Available tags: <code>{sched}</code>, <code>{date}</code>, <code>{total_slots}</code></div>
-
-                    <div style="font-size:12px; font-weight:700; color:#34d399; margin-top:12px; margin-bottom:8px;">GC Announcement Footer Template</div>
-                    <textarea id="gcFooterTemplate" rows="5" style="width:100%; min-height:120px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                    <div style="font-size:12px; font-weight:700; color:#34d399; margin-bottom:8px;">GC Announcement Template</div>
+                    <textarea id="gcAnnouncementTemplate" rows="14" style="width:100%; min-height:360px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                    <div style="font-size:10px; color:#64748b; margin-top:6px; line-height:1.5;">Available tags: <code>{date}</code>, <code>{sched}</code>, <code>{status}</code>, <code>{status_emoji}</code>, <code>{used}</code>, <code>{remaining}</code>, <code>{total_slots}</code>, <code>{reserve_link}</code>, <code>{reserve_section}</code>, <code>{rules_url}</code></div>
                   </div>
 
                   <!-- RULES LINK & PUBLIC BANNER BROADCAST -->
@@ -3088,7 +3085,7 @@
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:18px; align-items:start;">
                       <div style="background:rgba(15,23,42,0.75); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px;">
                         <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:8px;">Copy Slots List Template</div>
-                        <textarea id="copySlotsTemplate" rows="6" placeholder="Use {date}, {sched}, {open_room}, {slot_list}, {banned_list}, {rules_url}" style="width:100%; min-height:170px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                        <textarea id="copySlotsTemplate" rows="6" placeholder="Use {date}, {sched}, {open_room}, {open_slots}, {slot_list}, {banned_list}, {rules_url}" style="width:100%; min-height:170px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
                       </div>
                       <div style="background:rgba(15,23,42,0.75); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px;">
                         <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:8px;">Copy Top Teams Template</div>
@@ -3098,6 +3095,14 @@
                         <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:8px;">Copy Banned List Template</div>
                         <textarea id="copyBannedListTemplate" rows="6" placeholder="Use {sched}, {no_show}, {late_cancel}, {perm_banned}, {warnings}, {rules_url}" style="width:100%; min-height:170px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
                       </div>
+                          <div style="background:rgba(15,23,42,0.75); border:1px solid rgba(34,197,94,0.25); border-radius:10px; padding:12px;">
+                            <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:8px;">Copy Open Slot Template</div>
+                            <textarea id="openSlotTemplate" rows="6" placeholder="Edit the Open Slot message copied from Scrim Slots" style="width:100%; min-height:170px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                          </div>
+                          <div style="background:rgba(15,23,42,0.75); border:1px solid rgba(14,165,233,0.3); border-radius:10px; padding:12px;">
+                            <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:8px;">Copy Room Template</div>
+                            <textarea id="roomTemplate" rows="10" placeholder="Edit the room announcement copied from Scrim Slots" style="width:100%; min-height:260px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                          </div>
                     </div>
                   </div>
                 </div>
@@ -3541,6 +3546,8 @@
     const searchClanInput = document.getElementById('searchClan');
     const refreshBtn = document.getElementById('refreshBtn');
     const copySlotsBtn = document.getElementById('copySlotsBtn');
+    const copyOpenSlotBtn = document.getElementById('copyOpenSlotBtn');
+    const copyRoomBtn = document.getElementById('copyRoomBtn');
     const resetBtnAdmin = document.getElementById('resetBtnAdmin');
 
     const navScrim = document.getElementById('navScrim');
@@ -4934,6 +4941,119 @@
       });
     }
 
+    copyOpenSlotBtn.addEventListener('click', async () => {
+      const openSlotNumbers = [];
+      for (let i = 1; i <= MAX_SLOTS; i++) {
+        const existing = latestSlots.find(slot => Number(slot.slot) === i && slot.clan && slot.clan.trim());
+        if (!existing) openSlotNumbers.push(i);
+      }
+      const template = announcementsState.openSlotTemplate && announcementsState.openSlotTemplate.trim()
+        ? announcementsState.openSlotTemplate
+        : `🔓 𝗢𝗽𝗲𝗻 𝗦𝗹𝗼𝘁 🔓
+
+SLOT {open_slots} - 
+
+👽 𝗙𝗜𝗥𝗦𝗧 𝗧𝗢 𝗘𝗗𝗜𝗧
+👽 𝗘𝗗𝗜𝗧𝗘𝗗 𝗜𝗦 𝗡𝗢𝗧 𝗔𝗟𝗟𝗢𝗪𝗘𝗗
+👽 𝗡𝗢𝗧 𝗔𝗟𝗜𝗚𝗡 𝗜𝗡 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗡𝗢𝗧 𝗖𝗢𝗨𝗡𝗧𝗘𝗗
+‼️ 𝗪𝗥𝗢𝗡𝗚 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗙𝗢𝗥𝗠𝗔𝗧 = 𝗜𝗡𝗩𝗔𝗟𝗜𝗗
+
+@everyone`;
+      const text = applyTemplate(template, {
+        open_slots: openSlotNumbers.length ? openSlotNumbers.join(', ') : 'NONE'
+      });
+
+      try {
+        await navigator.clipboard.writeText(text);
+        showAdminToast('Open slot template copied!', 'success');
+      } catch (err) {
+        console.error('Failed to copy open slot template: ', err);
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          showAdminToast('Open slot template copied!', 'success');
+        } catch (err2) {
+          showAdminToast('Failed to copy open slot template.', 'error');
+        }
+        document.body.removeChild(textArea);
+      }
+    });
+
+    copyRoomBtn.addEventListener('click', async () => {
+      const text = announcementsState.roomTemplate && announcementsState.roomTemplate.trim()
+        ? announcementsState.roomTemplate
+        : `![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗥𝗢𝗨𝗡𝗗: 1 
+![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗚𝗜𝗩𝗘 𝗦𝗟𝗢𝗧: ![❌](https://static.xx.fbcdn.net/images/emoji.php/v9/tdd/1/16/274c.png)
+![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗟𝗢𝗖𝗞 𝗥𝗢𝗢𝗠 : 8:09
+![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗧𝗜𝗠𝗘 𝗦𝗧𝗔𝗥𝗧: 8:10
+![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗥𝗢𝗢𝗠 𝗜𝗗: 
+![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗥𝗢𝗢𝗠 𝗣𝗔𝗦𝗦: 
+
+![🗾](https://static.xx.fbcdn.net/images/emoji.php/v9/tcc/1/16/1f5fe.png) 𝙈𝘼𝙋: 𝑰𝑺𝑶-𝑩𝑶-𝑰𝑺𝑶
+ 
+-𝗡𝗢 𝗘𝗫𝗧𝗘𝗡𝗦𝗜𝗢𝗡
+-𝗡𝗢 𝗧.𝗢 𝗟𝗜𝗦𝗧 𝗨𝗦𝗘 𝗦𝗔𝗠𝗘 𝗔𝗩𝗔𝗧𝗔𝗥
+
+𝑵𝑶𝑻𝑬: 𝑳𝑽𝑳 250+ 𝑶𝑵𝑳𝒀
+𝑲𝒊𝒏𝒅𝒍𝒚 𝒕𝒂𝒌𝒆 𝑺𝒄𝒓𝒆𝒆𝒏𝒔𝒉𝒐𝒕 𝒊𝒇 𝒚𝒐𝒖 𝒔𝒆𝒆 𝒍𝒐𝒘 𝒍𝒗𝒍 𝒂𝒄𝒄𝒐𝒖𝒏𝒕.
+
+@everyone`;
+
+      try {
+        await navigator.clipboard.writeText(text);
+        showAdminToast('Room template copied!', 'success');
+      } catch (err) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          showAdminToast('Room template copied!', 'success');
+        } catch (err2) {
+          showAdminToast('Failed to copy room template.', 'error');
+        }
+        document.body.removeChild(textArea);
+      }
+    });
+
+    copySlotsBtn.addEventListener('click', async () => {
+      const text = `🔓 𝗢𝗣𝗲𝗻 𝗦𝗹𝗼𝘁 🔓
+
+SLOT - 
+
+👽 𝗙𝗜𝗥𝗦𝗧 𝗧𝗢 𝗘𝗗𝗜𝗧
+👽 𝗘𝗗𝗜𝗧𝗘𝗗 𝗜𝗦 𝗡𝗢𝗧 𝗔𝗟𝗟𝗢𝗪𝗘𝗗
+👽 𝗡𝗢𝗧 𝗔𝗟𝗜𝗚𝗡 𝗜𝗡 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗡𝗢𝗧 𝗖𝗢𝗨𝗡𝗧𝗘𝗗
+‼️ 𝗪𝗥𝗢𝗡𝗚 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗙𝗢𝗥𝗠𝗔𝗧 = 𝗜𝗡𝗩𝗔𝗟𝗜𝗗
+
+@everyone`;
+
+      try {
+        await navigator.clipboard.writeText(text);
+        showAdminToast('Open slot template copied!', 'success');
+      } catch (err) {
+        console.error('Failed to copy open slot template: ', err);
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          showAdminToast('Open slot template copied!', 'success');
+        } catch (err2) {
+          showAdminToast('Failed to copy open slot template.', 'error');
+        }
+        document.body.removeChild(textArea);
+      }
+    });
+
     copySlotsBtn.addEventListener('click', async () => {
       const d = new Date(); // Always use today's exact date for slot listing
       const options = { month: 'long', day: 'numeric', year: 'numeric' };
@@ -4942,10 +5062,12 @@
       let openRoomTime = schedFormatted.replace('PM', ':00 PM').replace('AM', ':00 AM');
 
       let slotList = '';
+      const openSlotNumbers = [];
       for (let i = 1; i <= MAX_SLOTS; i++) {
-        const existing = latestSlots.find(x => x.slot === i);
+        const existing = latestSlots.find(x => Number(x.slot) === i);
         const clanName = existing && existing.clan ? existing.clan.trim() : '';
-        slotList += `${i}. ${clanName}\n`;
+        if (!clanName) openSlotNumbers.push(i);
+        slotList += `${i}. ${clanName || 'OPEN SLOT'}\n`;
       }
 
       let bannedSummary = "🚫 𝑩𝑨𝑵𝑵𝑬𝑫 𝑻𝑬𝑨𝑴𝑺  (𝗡𝗢𝗦𝗛𝗢𝗪) 5 SCRIMS:   \n-\n\n\n‼️𝗟𝗔𝗧𝗘 𝗖𝗔𝗡𝗖𝗘𝗟𝗟𝗔𝚃𝙸𝙾𝙽‼️\n🚫BANNED 3 SCRIMS👽\n-\n \n‼️PERMANENT BANNED‼️\n-\n";
@@ -4999,12 +5121,13 @@
 
       const template = announcementsState.copySlotsTemplate && announcementsState.copySlotsTemplate.trim()
         ? announcementsState.copySlotsTemplate
-        : `‼️𝑨51 𝑩𝑹 𝑺𝑪𝑹𝑰𝑴𝑴𝑰𝑴𝑨𝑮𝑬‼️\n\n📅 𝐃𝐀𝐓𝐄: {date}\n⏰ 𝐒𝐂𝐇𝐄𝐃𝐔𝐋𝐄: {sched}\n🚪 OPEN ROOM: {open_room}\n\n𝑺𝑳𝑶𝑻𝑺 𝑳𝑰𝑺𝑻 :\n{slot_list}\n\n{banned_list}\n\n𝚁𝚄𝙻𝙴𝚂! ⬇️\n{rules_url}`;
+        : `‼️𝑨51 𝑩𝑹 𝑺𝑪𝑹𝑰𝑴𝑴𝑰𝑴𝑨𝑮𝑬‼️\n\n📅 𝐃𝐀𝐓𝐄: {date}\n⏰ 𝐒𝐂𝐇𝐄𝐃𝐔𝐋𝐄: {sched}\n🚪 OPEN ROOM: {open_room}\n🔓 OPEN SLOT NUMBERS: {open_slots}\n\n𝑺𝑳𝑶𝑻𝑺 𝑳𝑰𝑺𝑻 :\n{slot_list}\n\n{banned_list}\n\n𝚁𝚄𝙻𝙴𝚂! ⬇️\n{rules_url}`;
 
       text = applyTemplate(template, {
         date: formattedDate,
         sched: schedFormatted,
         open_room: openRoomTime,
+        open_slots: openSlotNumbers.length ? openSlotNumbers.join(', ') : 'NONE',
         slot_list: slotList,
         banned_list: bannedSummary,
         rules_url: announcementsState.rulesUrl || 'https://www.facebook.com/share/p/1Erdn8UzLk/'
@@ -5041,26 +5164,32 @@
 
       const siteLink = "https://markanthonymanuel45-coder.github.io/A51-ASTRAL/scrim_reservation.html";
       const sched = currentSched.toUpperCase();
+      const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+      const reserveLink = `${siteLink}?sched=${encodeURIComponent(currentSched)}`;
+      const reserveSection = isActuallyOpen && remaining > 0
+        ? `👇 *RESERVE YOUR SLOT HERE:*\n${reserveLink}`
+        : remaining === 0
+          ? `🚫 *STATUS:* 𝑺𝑳𝑶𝑻𝑺 𝑨𝑹𝑬 𝑭𝑼𝑳𝑳! 🚫\nWait for the next session announcement.`
+          : '⏳ Wait for admin to open the registration.';
+      const templateData = {
+        date: today,
+        sched,
+        status: statusText,
+        status_emoji: statusEmoji,
+        used,
+        remaining,
+        total_slots: MAX_SLOTS,
+        site_link: siteLink,
+        reserve_link: reserveLink,
+        reserve_section: reserveSection,
+        rules_url: announcementsState.rulesUrl || 'https://www.facebook.com/share/p/1Erdn8UzLk/'
+      };
 
-      let text = `🔥 *A51 ASTRAL SCRIM UPDATES* 🔥\n`;
-      text += `━━━━━━━━━━━━━━━━━━━━\n`;
-      text += `⏰ *SCHEDULE:* ${sched}\n`;
-      text += `${statusEmoji} *STATUS:* ${statusText}\n`;
-      text += `👥 *SLOTS:* ${used}/${MAX_SLOTS} (Remaining: ${remaining})\n\n`;
-
-      if (isActuallyOpen && remaining > 0) {
-        text += `👇 *RESERVE YOUR SLOT HERE:*\n`;
-        text += `${siteLink}?sched=${currentSched}\n`;
-      } else if (remaining === 0) {
-        text += `🚫 *STATUS:* 𝑺𝑳𝑶𝑻𝑺 𝑨𝑹𝑬 𝑭𝑼𝑳𝑳! 🚫\n`;
-        text += `Wait for the next session announcement.\n`;
-      } else {
-        text += `⏳ Wait for admin to open the registration.\n`;
-      }
-
-      text += `\n📜 *RULES:* \n`;
-      text += `https://www.facebook.com/share/p/1Erdn8UzLk/\n\n`;
-      text += `━━━━━━━━━━━━━━━━━━━━`;
+      const legacyTemplate = `${announcementsState.gcHeader || ''}\n\n{reserve_section}\n\n${announcementsState.gcFooter || ''}`;
+      const announcementTemplate = announcementsState.gcAnnouncementTemplate && announcementsState.gcAnnouncementTemplate.trim()
+        ? announcementsState.gcAnnouncementTemplate
+        : legacyTemplate;
+      const text = applyTemplate(announcementTemplate, templateData);
 
       try {
         await navigator.clipboard.writeText(text);
@@ -7158,12 +7287,15 @@
     let announcementsState = {
       gcHeader: 'ðŸ”¥ *A51 ASTRAL SCRIMMAGE* ðŸ”¥\nðŸ“… *DATE:* {date}\nâ° *TIME:* {sched}',
       gcFooter: 'Good luck to all teams! Room details will be sent 10 mins before start.\nOfficial Rules: https://www.facebook.com/share/p/1Erdn8UzLk/',
+      gcAnnouncementTemplate: '🔥 *A51 ASTRAL SCRIM UPDATES* 🔥\n━━━━━━━━━━━━━━━━━━━━\n📅 *DATE:* {date}\n⏰ *SCHEDULE:* {sched}\n{status_emoji} *STATUS:* {status}\n👥 *SLOTS:* {used}/{total_slots} (Remaining: {remaining})\n\n{reserve_section}\n\n📜 *RULES:*\n{rules_url}\n\n━━━━━━━━━━━━━━━━━━━━',
       rulesUrl: 'https://www.facebook.com/share/p/1Erdn8UzLk/',
       bannerText: 'ðŸ”¥ Welcome to Astral 51 Official Scrimmage! Registrations are OPEN.',
       bannerEnabled: true,
-      copySlotsTemplate: `‼️𝑨51 𝑩𝑹 𝑺𝑪𝑹𝑰𝑴𝑴𝑰𝑴𝑨𝑮𝑬‼️\n\n📅 𝐃𝐀𝐓𝐄: {date}\n⏰ 𝐒𝐂𝐇𝐄𝐃𝐔𝐋𝐄: {sched}\n🚪 OPEN ROOM: {open_room}\n\n𝑺𝑳𝑶𝑻𝑺 𝑳𝑰𝑺𝑻 :\n{slot_list}\n\n{banned_list}\n\n𝚁𝚄𝙻𝙴𝚂! ⬇️\n{rules_url}`,
+      copySlotsTemplate: `‼️𝑨51 𝑩𝑹 𝑺𝑪𝑹𝑰𝑴𝑴𝑰𝑴𝑨𝑮𝑬‼️\n\n📅 𝐃𝐀𝐓𝐄: {date}\n⏰ 𝐒𝐂𝐇𝐄𝐃𝐔𝐋𝐄: {sched}\n🚪 OPEN ROOM: {open_room}\n🔓 OPEN SLOT NUMBERS: {open_slots}\n\n𝑺𝑳𝑶𝑻𝑺 𝑳𝑰𝑺𝑻 :\n{slot_list}\n\n{banned_list}\n\n𝚁𝚄𝙻𝙴𝚂! ⬇️\n{rules_url}`,
       copyTopTeamsTemplate: `👽𝐂𝐎𝐍𝐆𝐑𝐀𝐓𝐔𝐋𝐀𝐓𝐈𝐎𝐍𝐒 𝐓𝐎 𝐓𝐇𝐄 𝐓𝐎𝐏 𝐓𝐄𝐀𝐌𝐒 👽\n\n📅 𝐃𝐀𝐓𝐄: {date} | {sched}\n🥇 𝐓𝐎𝐏 𝟏: {top1}\n🥈 𝐓𝐎𝐏 𝟐: {top2}\n🥉 𝐓𝐎𝐏 𝟑: {top3}\n\n🎖️ 𝐌𝐕𝐏: {mvp}\n\n𝙋𝙇𝙀𝘼𝙎𝙀 𝙎𝙀𝙉𝘿 𝙔𝙊𝙐𝙍 𝙇𝙊𝐆𝙊𝙎 𝘼𝙉𝘿 𝙈𝙑𝙋 𝙋𝙄𝘾𝙎 𝙃𝙀𝙍𝙀.👽\n\n{rules_url}`,
-      copyBannedListTemplate: `🚫 *A51 ASTRAL BANNED & WARNING TEAMS* 🚫\n\n⏰ *SCHEDULE:* {sched}\n\n🚫 *NO SHOW (5 SCRIMS BAN):*\n{no_show}\n‼️ *LATE CANCELLATION (3 SCRIMS BAN):*\n{late_cancel}\n⛔ *PERMANENT BANNED TEAMS:*\n{perm_banned}\n⚠️ *ACTIVE WARNINGS:*\n{warnings}\n\n📜 *RULES:* {rules_url}`
+      copyBannedListTemplate: `🚫 *A51 ASTRAL BANNED & WARNING TEAMS* 🚫\n\n⏰ *SCHEDULE:* {sched}\n\n🚫 *NO SHOW (5 SCRIMS BAN):*\n{no_show}\n‼️ *LATE CANCELLATION (3 SCRIMS BAN):*\n{late_cancel}\n⛔ *PERMANENT BANNED TEAMS:*\n{perm_banned}\n⚠️ *ACTIVE WARNINGS:*\n{warnings}\n\n📜 *RULES:* {rules_url}`,
+      openSlotTemplate: `🔓 𝗢𝗽𝗲𝗻 𝗦𝗹𝗼𝘁 🔓\n\nSLOT {open_slots} - \n\n👽 𝗙𝗜𝗥𝗦𝗧 𝗧𝗢 𝗘𝗗𝗜𝗧\n👽 𝗘𝗗𝗜𝗧𝗘𝗗 𝗜𝗦 𝗡𝗢𝗧 𝗔𝗟𝗟𝗢𝗪𝗘𝗗\n👽 𝗡𝗢𝗧 𝗔𝗟𝗜𝗚𝗡 𝗜𝗡 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗡𝗢𝗧 𝗖𝗢𝗨𝗡𝗧𝗘𝗗\n‼️ 𝗪𝗥𝗢𝗡𝗚 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗙𝗢𝗥𝗠𝗔𝗧 = 𝗜𝗡𝗩𝗔𝗟𝗜𝗗\n\n@everyone`,
+      roomTemplate: `![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗥𝗢𝗨𝗡𝗗: 1 \n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗚𝗜𝗩𝗘 𝗦𝗟𝗢𝗧: ![❌](https://static.xx.fbcdn.net/images/emoji.php/v9/tdd/1/16/274c.png)\n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗟𝗢𝗖𝗞 𝗥𝗢𝗢𝗠 : 8:09\n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗧𝗜𝗠𝗘 𝗦𝗧𝗔𝗥𝗧: 8:10\n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗥𝗢𝗢𝗠 𝗜𝗗: \n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗥𝗢𝗢𝗠 𝗣𝗔𝗦𝗦: \n\n![🗾](https://static.xx.fbcdn.net/images/emoji.php/v9/tcc/1/16/1f5fe.png) 𝙈𝘼𝙋: 𝑰𝑺𝑶-𝑩𝑶-𝑰𝑺𝑶\n \n-𝗡𝗢 𝗘𝗫𝗧𝗘𝗡𝗦𝗜𝗢𝗡\n-𝗡𝗢 𝗧.𝗢 𝗟𝗜𝗦𝗧 𝗨𝗦𝗘 𝗦𝗔𝗠𝗘 𝗔𝗩𝗔𝗧𝗔𝗥\n\n𝑵𝑶𝑻𝑬: 𝑳𝑽𝑳 250+ 𝑶𝑵𝗟𝒀\n𝑲𝒊𝒏𝒅𝒍𝒚 𝒕𝒂𝒌𝒆 𝑺𝒄𝒓𝒆𝒆𝒏𝒔𝒉𝒐𝒕 𝒊𝒇 𝒚𝒐𝒖 𝒔𝒆𝒆 𝒍𝒐𝒘 𝒍𝒗𝒍 𝒂𝒄𝒄𝒐𝒖𝒏𝒕.\n\n@everyone`
     };
 
     let autoTimerGlobalEnabled = true;
@@ -7375,10 +7507,11 @@
       if (kmDisplay) kmDisplay.textContent = scoringState.killMultiplier || 2;
 
       // 5. Render Announcements & Public Banner
-      const gcH = document.getElementById('gcHeaderTemplate');
-      if (gcH) gcH.value = announcementsState.gcHeader || '';
-      const gcF = document.getElementById('gcFooterTemplate');
-      if (gcF) gcF.value = announcementsState.gcFooter || '';
+      if (announcementsState.openSlotTemplate && !announcementsState.openSlotTemplate.includes('{open_slots}')) {
+        announcementsState.openSlotTemplate = announcementsState.openSlotTemplate.replace(/SLOT\s*-\s*/i, 'SLOT {open_slots} - ');
+      }
+      const gcTemplate = document.getElementById('gcAnnouncementTemplate');
+      if (gcTemplate) gcTemplate.value = announcementsState.gcAnnouncementTemplate || '';
       const rUrl = document.getElementById('rulesUrlInput');
       if (rUrl) rUrl.value = announcementsState.rulesUrl || '';
       const pubCheck = document.getElementById('publicBannerCheck');
@@ -7391,6 +7524,10 @@
       if (copyTopTeamsTemplate) copyTopTeamsTemplate.value = announcementsState.copyTopTeamsTemplate || '';
       const copyBannedListTemplate = document.getElementById('copyBannedListTemplate');
       if (copyBannedListTemplate) copyBannedListTemplate.value = announcementsState.copyBannedListTemplate || '';
+      const openSlotTemplate = document.getElementById('openSlotTemplate');
+      if (openSlotTemplate) openSlotTemplate.value = announcementsState.openSlotTemplate || '';
+      const roomTemplate = document.getElementById('roomTemplate');
+      if (roomTemplate) roomTemplate.value = announcementsState.roomTemplate || '';
 
       const autoCheck = document.getElementById('globalAutoTimerCheck');
       if (autoCheck) autoCheck.checked = autoTimerGlobalEnabled;
@@ -7510,10 +7647,8 @@
       }
 
       // Collect announcement inputs
-      const gcH = document.getElementById('gcHeaderTemplate');
-      if (gcH) announcementsState.gcHeader = gcH.value;
-      const gcF = document.getElementById('gcFooterTemplate');
-      if (gcF) announcementsState.gcFooter = gcF.value;
+      const gcTemplate = document.getElementById('gcAnnouncementTemplate');
+      if (gcTemplate) announcementsState.gcAnnouncementTemplate = gcTemplate.value;
       const rUrl = document.getElementById('rulesUrlInput');
       if (rUrl) announcementsState.rulesUrl = rUrl.value;
       const pubCheck = document.getElementById('publicBannerCheck');
@@ -7526,6 +7661,10 @@
       if (copyTopTeamsTemplate) announcementsState.copyTopTeamsTemplate = copyTopTeamsTemplate.value;
       const copyBannedListTemplate = document.getElementById('copyBannedListTemplate');
       if (copyBannedListTemplate) announcementsState.copyBannedListTemplate = copyBannedListTemplate.value;
+      const openSlotTemplate = document.getElementById('openSlotTemplate');
+      if (openSlotTemplate) announcementsState.openSlotTemplate = openSlotTemplate.value;
+      const roomTemplate = document.getElementById('roomTemplate');
+      if (roomTemplate) announcementsState.roomTemplate = roomTemplate.value;
 
       try {
         await Promise.all([

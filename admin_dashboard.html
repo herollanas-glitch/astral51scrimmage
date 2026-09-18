@@ -5624,21 +5624,23 @@ SLOT -
 
     saveAsImageBtn.onclick = async () => {
       const rows = [];
+      const sRoundsCount = getRoundsForSchedule(currentSched);
+      const minCells = 2 + (sRoundsCount * 2) + 1;
       scoreboardBody.querySelectorAll('tr').forEach(tr => {
         const cells = tr.querySelectorAll('td');
-        if (cells.length < 9) return;
-        const team = cells[1].textContent;
+        if (cells.length < minCells) return;
+        const team = cells[1].textContent.trim();
         const getVal = (idx) => cells[idx].querySelector('input')?.value.trim() || '';
         if (team && team !== '—') {
-          const r1v = getVal(2); const r2v = getVal(4); const r3v = getVal(6);
-          rows.push({
-            team,
-            r1: r1v, pp1: getVal(3),
-            r2: r2v, pp2: getVal(5),
-            r3: r3v, pp3: getVal(7),
-            total: getVal(8),
-            maxKills: Math.max(parseInt(r1v, 10) || 0, parseInt(r2v, 10) || 0, parseInt(r3v, 10) || 0)
-          });
+          const row = { team, total: getVal(2 + (sRoundsCount * 2)), maxKills: 0 };
+          for (let r = 1; r <= 3; r++) {
+            const roundIndex = r <= sRoundsCount ? 2 + ((r - 1) * 2) : -1;
+            const kills = roundIndex >= 0 ? getVal(roundIndex) : '';
+            row['r' + r] = kills;
+            row['pp' + r] = roundIndex >= 0 ? getVal(roundIndex + 1) : '';
+            row.maxKills = Math.max(row.maxKills, parseInt(kills, 10) || 0);
+          }
+          rows.push(row);
         }
       });
 

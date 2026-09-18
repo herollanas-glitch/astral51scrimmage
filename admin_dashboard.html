@@ -5399,8 +5399,7 @@ SLOT -
     });
 
     const savePlayersBtn = document.getElementById('savePlayersBtn');
-    if (savePlayersBtn) {
-      savePlayersBtn.onclick = async () => {
+    async function savePlayerStats({ showToast = true } = {}) {
         savePlayersBtn.disabled = true;
         savePlayersBtn.textContent = 'Saving...';
         const inputs = document.querySelectorAll('.player-input');
@@ -5430,19 +5429,20 @@ SLOT -
             body: JSON.stringify({ key: `${currentSched}_players_data`, value: jsonStr })
           });
           if (res.ok) {
-            showAdminToast(`Player Stats Saved!`, 'success');
+            if (showToast) showAdminToast(`Player Stats Saved!`, 'success');
             logSystemActivity('Player Stats Saved', `Player statistics saved for ${currentSched.toUpperCase()}.`, 'SCOREBOARD');
             latestPlayersData = jsonStr;
           } else {
             showAdminToast('Failed to save players.', 'error');
           }
         } catch (e) {
-          showAdminToast('Error saving players.', 'error');
+          showAdminToast('Failed to save players.', 'error');
         }
         savePlayersBtn.disabled = false;
         savePlayersBtn.textContent = 'Save Stats';
-      };
-    }
+      }
+
+    if (savePlayersBtn) savePlayersBtn.onclick = () => savePlayerStats();
 
     if (refreshScoreboardBtn) {
       refreshScoreboardBtn.onclick = async () => {
@@ -5513,11 +5513,8 @@ SLOT -
         localStorage.removeItem(`hideScoreHistory_${currentSched}`);
         latestScoreboardData = rows;
 
+        await savePlayerStats({ showToast: false });
         await refreshScoreboardData({ showToast: false });
-
-        if (savePlayersBtn && !savePlayersBtn.disabled) {
-          savePlayersBtn.click();
-        }
 
         fetch('https://api.github.com/repos/markanthonymanuel45-coder/A51-ASTRAL/dispatches', {
           method: 'POST',

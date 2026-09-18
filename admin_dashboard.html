@@ -3043,15 +3043,6 @@
                 <div id="perScheduleRoundsContainer" style="display:flex; flex-direction:column; gap:10px;">
                 </div>
 
-                <!-- PLACEMENT POINTS LOOKUP TABLE -->
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <div style="font-size:12px; font-weight:700; color:#e2e8f0;">Placement Points Table (Rank 1–25):</div>
-                    <button type="button" id="resetPlacementPointsBtn" class="btn btn-ghost" style="font-size:10px; padding:3px 8px; border-color:rgba(56,189,248,0.3); color:#38bdf8;">Reset Standard</button>
-                  </div>
-                  <div id="placementPointsGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap:6px; max-height:160px; overflow-y:auto; background:rgba(15,23,42,0.9); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
-                  </div>
-                </div>
               </div>
 
               <!-- MODULE 3: CUSTOM GC ANNOUNCEMENT & RULES & BROADCAST BANNER -->
@@ -3063,19 +3054,19 @@
                   <div style="font-size:11px; color:#94a3af; margin-top:2px;">Customize automated GC announcement copy formats, official rules link, and public broadcast banners.</div>
                 </div>
 
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap:22px; align-items:start;">
                   <!-- GC ANNOUNCEMENT TEMPLATE -->
-                  <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:14px;">
+                  <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:16px; min-height:100%;">
                     <div style="font-size:12px; font-weight:700; color:#34d399; margin-bottom:8px;">GC Announcement Header Template</div>
-                    <textarea id="gcHeaderTemplate" rows="3" style="width:100%; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:8px; font-size:11px; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                    <textarea id="gcHeaderTemplate" rows="6" style="width:100%; min-height:160px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
                     <div style="font-size:10px; color:#64748b; margin-top:4px;">Available tags: <code>{sched}</code>, <code>{date}</code>, <code>{total_slots}</code></div>
 
                     <div style="font-size:12px; font-weight:700; color:#34d399; margin-top:12px; margin-bottom:8px;">GC Announcement Footer Template</div>
-                    <textarea id="gcFooterTemplate" rows="2" style="width:100%; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:8px; font-size:11px; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                    <textarea id="gcFooterTemplate" rows="5" style="width:100%; min-height:120px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
                   </div>
 
                   <!-- RULES LINK & PUBLIC BANNER BROADCAST -->
-                  <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:14px;">
+                  <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:16px; min-height:100%;">
                     <div style="font-size:12px; font-weight:700; color:#38bdf8; margin-bottom:8px;">Official Scrim Rules URL</div>
                     <input type="text" id="rulesUrlInput" style="width:100%; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:8px; font-size:11px; outline:none;">
 
@@ -3087,25 +3078,25 @@
                           <span>Show on Public Page</span>
                         </label>
                       </div>
-                      <textarea id="publicBannerText" rows="2" placeholder="e.g. 🔥 Reservations for tonight's scrims are now open! Follow rules & submit your line-ups." style="width:100%; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:8px; font-size:11px; outline:none;"></textarea>
+                      <textarea id="publicBannerText" rows="4" placeholder="e.g. 🔥 Reservations for tonight's scrims are now open! Follow rules & submit your line-ups." style="width:100%; min-height:110px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; outline:none;"></textarea>
                     </div>
                   </div>
 
                   <!-- COPY TEMPLATE SETTINGS -->
-                  <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(168,85,247,0.25); border-radius:10px; padding:14px; grid-column:1 / -1;">
-                    <div style="font-size:12px; font-weight:700; color:#d8b4fe; margin-bottom:12px;">Copy Template Presets</div>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:12px;">
-                      <div>
-                        <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:6px;">Copy Slots List Template</div>
-                        <textarea id="copySlotsTemplate" rows="4" placeholder="Use {date}, {sched}, {open_room}, {slot_list}, {banned_list}, {rules_url}" style="width:100%; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:8px; font-size:11px; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                  <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(168,85,247,0.25); border-radius:12px; padding:18px; grid-column:1 / -1; margin-top:4px;">
+                    <div style="font-size:12px; font-weight:700; color:#d8b4fe; margin-bottom:14px;">Copy Template Presets</div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:18px; align-items:start;">
+                      <div style="background:rgba(15,23,42,0.75); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px;">
+                        <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:8px;">Copy Slots List Template</div>
+                        <textarea id="copySlotsTemplate" rows="6" placeholder="Use {date}, {sched}, {open_room}, {slot_list}, {banned_list}, {rules_url}" style="width:100%; min-height:170px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
                       </div>
-                      <div>
-                        <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:6px;">Copy Top Teams Template</div>
-                        <textarea id="copyTopTeamsTemplate" rows="4" placeholder="Use {date}, {sched}, {top1}, {top2}, {top3}, {mvp}, {rules_url}" style="width:100%; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:8px; font-size:11px; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                      <div style="background:rgba(15,23,42,0.75); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px;">
+                        <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:8px;">Copy Top Teams Template</div>
+                        <textarea id="copyTopTeamsTemplate" rows="6" placeholder="Use {date}, {sched}, {top1}, {top2}, {top3}, {mvp}, {rules_url}" style="width:100%; min-height:170px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
                       </div>
-                      <div>
-                        <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:6px;">Copy Banned List Template</div>
-                        <textarea id="copyBannedListTemplate" rows="4" placeholder="Use {sched}, {no_show}, {late_cancel}, {perm_banned}, {warnings}, {rules_url}" style="width:100%; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:8px; font-size:11px; font-family:monospace; resize:vertical; outline:none;"></textarea>
+                      <div style="background:rgba(15,23,42,0.75); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px;">
+                        <div style="font-size:11px; font-weight:700; color:#f8fafc; margin-bottom:8px;">Copy Banned List Template</div>
+                        <textarea id="copyBannedListTemplate" rows="6" placeholder="Use {sched}, {no_show}, {late_cancel}, {perm_banned}, {warnings}, {rules_url}" style="width:100%; min-height:170px; background:#1e293b; color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:12px 14px; font-size:12px; line-height:1.5; font-family:monospace; resize:vertical; outline:none;"></textarea>
                       </div>
                     </div>
                   </div>
@@ -4474,7 +4465,7 @@
             input.style.outline = 'none';
             if (!isKill) {
               input.dataset.placement = 'true';
-              input.title = 'Enter placement rank (1-25) to auto-convert to placement points';
+              input.title = 'Enter placement points manually for this team';
             }
             input.onfocus = () => {
               input.style.borderColor = '#3b82f6';
@@ -7199,10 +7190,10 @@
       const raw = String(rawValue ?? '').trim();
       if (!raw) return '';
       if (!/^\d+$/.test(raw)) return raw;
-      const rank = parseInt(raw, 10);
-      if (rank >= 1 && rank <= 25) {
-        return String(getPlacementPointsForRank(rank));
-      }
+
+      // Placement points in the scoreboard are manually decided by the admin.
+      // Do NOT convert rank numbers like 1, 2, 3 into the standard PP table,
+      // otherwise the admin cannot freely assign placement points to the top teams.
       return raw;
     }
 
@@ -7383,24 +7374,7 @@
       const kmDisplay = document.getElementById('killMultDisplay');
       if (kmDisplay) kmDisplay.textContent = scoringState.killMultiplier || 2;
 
-      // 5. Render Placement Points Grid
-      const ppGrid = document.getElementById('placementPointsGrid');
-      if (ppGrid) {
-        let gridHtml = '';
-        for (let rank = 1; rank <= 25; rank++) {
-          const pts = (scoringState.placementPoints && scoringState.placementPoints[rank] !== undefined)
-            ? scoringState.placementPoints[rank] : (rank === 1 ? 15 : rank === 2 ? 12 : rank === 3 ? 10 : rank === 4 ? 8 : rank === 5 ? 6 : rank === 6 ? 4 : rank === 7 ? 2 : rank <= 10 ? 1 : 0);
-          gridHtml += `
-            <div style="background:rgba(30,41,59,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:4px; text-align:center;">
-              <div style="font-size:10px; color:#94a3af; font-weight:700;">#${rank}</div>
-              <input type="number" min="0" max="100" value="${pts}" onchange="updatePlacementPoint(${rank}, this.value)" style="width:100%; margin-top:2px; background:#0f172a; color:#fde047; border:1px solid rgba(250,204,21,0.3); border-radius:4px; font-size:11px; font-weight:bold; text-align:center; padding:2px 0; outline:none;">
-            </div>
-          `;
-        }
-        ppGrid.innerHTML = gridHtml;
-      }
-
-      // 6. Render Announcements & Public Banner
+      // 5. Render Announcements & Public Banner
       const gcH = document.getElementById('gcHeaderTemplate');
       if (gcH) gcH.value = announcementsState.gcHeader || '';
       const gcF = document.getElementById('gcFooterTemplate');

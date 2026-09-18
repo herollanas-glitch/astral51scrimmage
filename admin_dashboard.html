@@ -7302,7 +7302,10 @@ SLOT -
 
     function getRoundsForSchedule(sched) {
       const key = sched ? `scrim_rounds_${sched.toLowerCase()}` : 'scrim_rounds';
-      if (sched && roundsState[key] !== undefined) {
+      if (sched) {
+        if (roundsState[key] === undefined) {
+          roundsState[key] = parseInt(roundsState.scrim_rounds, 10) || 3;
+        }
         return parseInt(roundsState[key], 10) || 3;
       }
       return parseInt(roundsState.scrim_rounds, 10) || 3;
@@ -7562,12 +7565,6 @@ SLOT -
       const newR = Math.max(1, Math.min(8, currentR + delta));
       const specificKey = `scrim_rounds_${String(schedId).toLowerCase()}`;
       roundsState[specificKey] = newR;
-
-      // Keep the legacy global value only as a fallback for older data,
-      // but do NOT overwrite it when editing a single time slot.
-      if (roundsState.scrim_rounds === undefined || roundsState.scrim_rounds === currentR) {
-        roundsState.scrim_rounds = newR;
-      }
 
       renderSettingsUI();
       if (scoreboardView && scoreboardView.style.display !== 'none') {

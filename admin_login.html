@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CODM Scrim · Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Outfit:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --neon-cyan: #00f0ff;
+      --neon-blue: #3b82f6;
+      --neon-purple: #8b5cf6;
+      --neon-emerald: #00ff9d;
+      --neon-crimson: #ff0055;
+      --bg-dark: #030712;
+      --card-bg: rgba(10, 15, 29, 0.78);
+      --border-glow: rgba(0, 240, 255, 0.22);
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #030712;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+    }
+
+    /* Ambient cyber orb */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .login-card {
+      position: relative;
+      z-index: 1;
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      padding: 32px 28px 24px;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 
+        0 25px 60px -15px rgba(0, 0, 0, 0.9),
+        0 0 35px -5px rgba(0, 240, 255, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--border-glow);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .login-card::after {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 20%;
+      right: 20%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+      border-radius: 2px;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      color: var(--neon-cyan);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .brand-badge .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--neon-cyan);
+      box-shadow: 0 0 8px var(--neon-cyan);
+      animation: neonPulse 2s infinite;
+    }
+
+    @keyframes neonPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, #ffffff 30%, #38bdf8 80%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 22px;
+      letter-spacing: 0.02em;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 5px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: #f1f5f9;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #00f0ff 0%, #3b82f6 100%);
+      color: #030712;
+      font-weight: 800;
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.35);
+    }
+
+    .form-panel {
+      display: none;
+      text-align: left;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .form-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .field-label {
+      display: block;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      margin: 0 0 6px 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .input {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(15, 23, 42, 0.6);
+      color: #f8fafc;
+      margin: 0 0 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    .input::placeholder {
+      color: #475569;
+    }
+
+    .input:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 0 1px var(--neon-cyan), 0 0 20px rgba(0, 240, 255, 0.2);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .message {
+      font-size: 12px;
+      min-height: 18px;
+      margin-bottom: 12px;
+      text-align: center;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .message.error {
+      color: #fca5a5;
+    }
+
+    .message.success {
+      color: #86efac;
+    }
+
+    .message.info {
+      color: #fde047;
+    }
+
+    .btn {
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 12px 20px;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00f0ff 0%, #3b82f6 100%);
+      color: #030712;
+      font-weight: 800;
+      box-shadow: 0 8px 25px rgba(0, 240, 255, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0, 240, 255, 0.45);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .divider {
+      margin: 22px 0 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+
+    .divider span {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0a0f1d;
+      padding: 0 14px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .admin-section {
+      text-align: left;
+    }
+
+    .admin-toggle {
+      background: transparent;
+      border: none;
+      color: #38bdf8;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      padding: 6px 0;
+      margin-top: 6px;
+      width: 100%;
+      text-align: center;
+      transition: color 0.2s;
+    }
+
+    .admin-toggle:hover {
+      color: var(--neon-cyan);
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+    }
+
+    #adminPanel {
+      display: none;
+      margin-top: 12px;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    #adminPanel.visible {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-card">
+    <div class="brand-badge">
+      <span class="pulse-dot"></span>
+      ASTRAL 51 · AUTH TERMINAL
+    </div>
+    <h1>CODM Scrim Portal</h1>
+    <div class="subtitle">Access tactical scrimmage reservation & management system</div>
+
+    <div class="tabs">
+      <button type="button" id="tabLogin" class="tab-btn active">Sign In</button>
+      <button type="button" id="tabRegister" class="tab-btn">Create Account</button>
+    </div>
+
+    <!-- Account Type Tabs (for register only) -->
+    <div id="accountTypeTabs" class="tabs" style="margin-bottom: 14px; background: rgba(15, 23, 42, 0.6); display: none;">
+      <button type="button" id="acctUser" class="tab-btn active" style="font-size: 12px;">👤 Admin Account</button>
+      <button type="button" id="acctClan" class="tab-btn" style="font-size: 12px;">🛡️ Clan Team</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="loginPanel" class="form-panel active">
+      <label class="field-label" for="loginUser">Username or Email</label>
+      <input type="text" id="loginUser" class="input" placeholder="Enter operator ID or email" autocomplete="username">
+      <label class="field-label" for="loginPass">Password</label>
+      <input type="password" id="loginPass" class="input" placeholder="Enter secure password" autocomplete="current-password">
+      <label class="field-label" for="loginRoleSelect" style="margin-top:4px;">Account Classification</label>
+      <select id="loginRoleSelect" class="input" style="cursor:pointer; appearance: auto;">
+        <option value="admin">👤 Admin / Moderator</option>
+        <option value="clan">🛡️ Registered Clan Team</option>
+      </select>
+      <div id="loginMsg" class="message"></div>
+      <button type="button" id="loginBtn" class="btn btn-primary">Authorize Login ⚡</button>
+    </div>
+
+    <!-- REGISTER - USER -->
+    <div id="registerUserPanel" class="form-panel">
+      <label class="field-label" for="regUsername">Username</label>
+      <input type="text" id="regUsername" class="input" placeholder="Choose operator codename" autocomplete="username">
+      <label class="field-label" for="regEmail">Email Address</label>
+      <input type="email" id="regEmail" class="input" placeholder="operator@domain.com" autocomplete="email">
+      <label class="field-label" for="regPass">Password</label>
+      <input type="password" id="regPass" class="input" placeholder="Min 6 characters" autocomplete="new-password">
+      <label class="field-label" for="regConfirm">Confirm Password</label>
+      <input type="password" id="regConfirm" class="input" placeholder="Re-enter password" autocomplete="new-password">
+      <div id="registerMsg" class="message"></div>
+      <button type="button" id="registerBtn" class="btn btn-primary">Create Operator Account</button>
+    </div>
+
+    <!-- REGISTER - CLAN -->
+    <div id="registerClanPanel" class="form-panel">
+      <label class="field-label" for="regClanTag">Clan Tag <span style="color:#f87171;">*</span></label>
+      <input type="text" id="regClanTag" class="input" placeholder="e.g. A51, ZRM (1-5 chars)" maxlength="5" style="text-transform:uppercase; font-weight:700; letter-spacing:0.1em;">
+      <label class="field-label" for="regClanName">Full Clan Name <span style="color:#f87171;">*</span></label>
+      <input type="text" id="regClanName" class="input" placeholder="e.g. ASTRAL 51 ELITE">
+      <label class="field-label" for="regClanLeader">Clan Handler Name <span style="color:#f87171;">*</span> <span style="color:#38bdf8; font-size:11px; font-weight:normal; margin-left:4px;">(Input your FB NAME)</span></label>
+      <input type="text" id="regClanLeader" class="input" placeholder="Enter your Facebook Name (e.g. Juan Dela Cruz)">
+      <div style="font-size:10px; color:#38bdf8; margin:-4px 0 10px 2px; opacity:0.85;">📌 Please input your real Facebook Name for GC verification & admin contact.</div>
+      <label class="field-label" for="regClanUsername">Clan Login Username <span style="color:#f87171;">*</span></label>
+      <input type="text" id="regClanUsername" class="input" placeholder="Username for clan logins">
+      <label class="field-label" for="regClanPass">Password <span style="color:#f87171;">*</span></label>
+      <input type="password" id="regClanPass" class="input" placeholder="Create password (min 6 chars)" autocomplete="new-password">
+      <label class="field-label" for="regClanConfirm">Confirm Password <span style="color:#f87171;">*</span></label>
+      <input type="password" id="regClanConfirm" class="input" placeholder="Re-enter password" autocomplete="new-password">
+      <div id="registerClanMsg" class="message"></div>
+      <div style="font-size: 11px; color:#94a3b8; margin-bottom: 12px; text-align:center; line-height:1.4;">
+        🛡️ Note: Clan accounts require admin verification before reserving scrim slots.
+      </div>
+      <button type="button" id="registerClanBtn" class="btn btn-primary" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: #fff;">🛡️ Register Clan Team</button>
+    </div>
+
+    <div class="divider"><span>Master Terminal</span></div>
+
+    <div class="admin-section">
+      <button type="button" id="adminToggle" class="admin-toggle">Master Key Direct Login ➔</button>
+      <div id="adminPanel">
+        <label class="field-label" for="adminKey">Master Admin Key</label>
+        <input type="password" id="adminKey" class="input" placeholder="Enter master security key">
+        <div id="adminMsg" class="message"></div>
+        <button type="button" id="adminLoginBtn" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff;">Authenticate Master Key</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const USERS_CONFIG_KEY = 'app_users';
+    const CLANS_CONFIG_KEY = 'app_clans';
+
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const acctUser = document.getElementById('acctUser');
+    const acctClan = document.getElementById('acctClan');
+    const loginPanel = document.getElementById('loginPanel');
+    const registerUserPanel = document.getElementById('registerUserPanel');
+    const registerClanPanel = document.getElementById('registerClanPanel');
+    const loginMsg = document.getElementById('loginMsg');
+    const registerMsg = document.getElementById('registerMsg');
+    const registerClanMsg = document.getElementById('registerClanMsg');
+    const adminMsg = document.getElementById('adminMsg');
+    let currentAccountType = 'user';
+
+    function setMsg(el, text, type) {
+      el.textContent = text || '';
+      el.className = 'message' + (type ? ' ' + type : '');
+    }
+
+    function switchTab(tab) {
+      const isLogin = tab === 'login';
+      tabLogin.classList.toggle('active', isLogin);
+      tabRegister.classList.toggle('active', !isLogin);
+      loginPanel.classList.toggle('active', isLogin);
+      // Show account type tabs only on Register tab
+      document.getElementById('accountTypeTabs').style.display = isLogin ? 'none' : 'flex';
+      if (!isLogin) {
+        switchAccountType(currentAccountType);
+      } else {
+        registerUserPanel.classList.remove('active');
+        registerClanPanel.classList.remove('active');
+      }
+      setMsg(loginMsg, '');
+      setMsg(registerMsg, '');
+      setMsg(registerClanMsg, '');
+    }
+
+    function switchAccountType(type) {
+      currentAccountType = type;
+      acctUser.classList.toggle('active', type === 'user');
+      acctClan.classList.toggle('active', type === 'clan');
+      const isLogin = tabLogin.classList.contains('active');
+      if (!isLogin) {
+        registerUserPanel.classList.toggle('active', type === 'user');
+        registerClanPanel.classList.toggle('active', type === 'clan');
+      }
+      setMsg(registerMsg, '');
+      setMsg(registerClanMsg, '');
+    }
+
+    tabLogin.onclick = () => switchTab('login');
+    tabRegister.onclick = () => switchTab('register');
+    acctUser.onclick = () => switchAccountType('user');
+    acctClan.onclick = () => switchAccountType('clan');
+
+    document.getElementById('adminToggle').onclick = () => {
+      document.getElementById('adminPanel').classList.toggle('visible');
+    };
+
+    async function hashPassword(password) {
+      const data = new TextEncoder().encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function normalize(str) {
+      return (str || '').toString().trim().toLowerCase();
+    }
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    const SUPABASE_URL = 'https://afwyltxrweqdkwydosuj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_3IDf6J5kzstcUOxTijHXxA_-Gb77H-M';
+
+    const supabaseHeaders = () => ({
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+    });
+
+    async function fetchUsers() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.app_users&select=value`, {
+          headers: supabaseHeaders()
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        if (data && data[0] && data[0].value) {
+          const parsed = JSON.parse(data[0].value);
+          return Array.isArray(parsed) ? parsed : [];
+        }
+        return [];
+      } catch (err) {
+        console.error('fetchUsers error:', err);
+        return [];
+      }
+    }
+
+    async function saveUsers(users) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/config`, {
+          method: 'POST',
+          headers: {
+            ...supabaseHeaders(),
+            Prefer: 'resolution=merge-duplicates, return=minimal'
+          },
+          body: JSON.stringify({ key: 'app_users', value: JSON.stringify(users) })
+        });
+        return res.ok;
+      } catch (err) {
+        console.error('saveUsers error:', err);
+        return false;
+      }
+    }
+
+    function setUserSession(user, accountType = 'user') {
+      sessionStorage.setItem('codmUserAuth', '1');
+      localStorage.setItem('codmUserAuth', '1');
+      sessionStorage.setItem('codmUserId', user.id);
+      localStorage.setItem('codmUserId', user.id);
+      sessionStorage.setItem('codmUsername', user.username);
+      localStorage.setItem('codmUsername', user.username);
+      sessionStorage.setItem('codmUserEmail', user.email || '');
+      localStorage.setItem('codmUserEmail', user.email || '');
+      sessionStorage.setItem('codmUserStatus', user.status);
+      localStorage.setItem('codmUserStatus', user.status);
+      sessionStorage.setItem('codmUserRole', accountType);
+      localStorage.setItem('codmUserRole', accountType);
+      sessionStorage.setItem('codmAccountType', accountType);
+      localStorage.setItem('codmAccountType', accountType);
+      if (accountType === 'clan') {
+        sessionStorage.setItem('codmClanTag', user.clan_tag || '');
+        localStorage.setItem('codmClanTag', user.clan_tag || '');
+        sessionStorage.setItem('codmClanName', user.clan_name || '');
+        localStorage.setItem('codmClanName', user.clan_name || '');
+        const app = (user.clan_approved === true || user.clan_approved === 'true') ? 'true' : 'false';
+        sessionStorage.setItem('codmClanApproved', app);
+        localStorage.setItem('codmClanApproved', app);
+        const times = JSON.stringify(user.allowed_times || ['6pm', '8pm', '10pm']);
+        sessionStorage.setItem('codmClanAllowedTimes', times);
+        localStorage.setItem('codmClanAllowedTimes', times);
+      } else {
+        sessionStorage.removeItem('codmClanTag');
+        localStorage.removeItem('codmClanTag');
+        sessionStorage.removeItem('codmClanName');
+        localStorage.removeItem('codmClanName');
+        sessionStorage.removeItem('codmClanApproved');
+        localStorage.removeItem('codmClanApproved');
+        sessionStorage.removeItem('codmClanAllowedTimes');
+        localStorage.removeItem('codmClanAllowedTimes');
+      }
+    }
+
+    async function fetchClans() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.app_clans&select=value`, {
+          headers: supabaseHeaders()
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        if (data && data[0] && data[0].value) {
+          const parsed = JSON.parse(data[0].value);
+          return Array.isArray(parsed) ? parsed : [];
+        }
+        return [];
+      } catch (err) {
+        console.error('fetchClans error:', err);
+        return [];
+      }
+    }
+
+    async function saveClans(clans) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/config`, {
+          method: 'POST',
+          headers: {
+            ...supabaseHeaders(),
+            Prefer: 'resolution=merge-duplicates, return=minimal'
+          },
+          body: JSON.stringify({ key: 'app_clans', value: JSON.stringify(clans) })
+        });
+        return res.ok;
+      } catch (err) {
+        console.error('saveClans error:', err);
+        return false;
+      }
+    }
+
+    // --- USER LOGIN ---
+    async function doUserLogin() {
+      const identifier = normalize(document.getElementById('loginUser').value);
+      const password = document.getElementById('loginPass').value;
+      const roleSelect = document.getElementById('loginRoleSelect');
+      const selectedRole = roleSelect ? roleSelect.value : 'admin';
+      const btn = document.getElementById('loginBtn');
+
+      if (!identifier || !password) {
+        setMsg(loginMsg, 'Please enter your username/email and password.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+      setMsg(loginMsg, '');
+
+      try {
+        let user = null;
+        let accountType = selectedRole === 'clan' ? 'clan' : 'user';
+
+        if (selectedRole === 'clan') {
+          // Only search clan accounts
+          const clans = await fetchClans();
+          user = clans.find(c =>
+            normalize(c.username) === identifier || normalize(c.email) === identifier
+          );
+          if (!user) {
+            setMsg(loginMsg, 'Clan account not found. Check your credentials.', 'error');
+            return;
+          }
+        } else {
+          // Only search admin/user accounts
+          const users = await fetchUsers();
+          user = users.find(u =>
+            normalize(u.username) === identifier || normalize(u.email) === identifier
+          );
+          if (!user) {
+            setMsg(loginMsg, 'Admin account not found. Check your credentials.', 'error');
+            return;
+          }
+        }
+
+        const hash = await hashPassword(password);
+        if (user.password !== hash) {
+          setMsg(loginMsg, 'Incorrect password.', 'error');
+          return;
+        }
+
+        const status = (user.status || 'pending approval').toLowerCase();
+        if (status === 'pending approval') {
+          setMsg(loginMsg, accountType === 'clan'
+            ? 'Your clan account is pending admin approval. Please wait for verification.'
+            : 'Your account is pending approval. Please wait for an admin to activate it.', 'info');
+          return;
+        }
+        if (status === 'inactive') {
+          setMsg(loginMsg, 'Your account is inactive. Contact an admin for assistance.', 'error');
+          return;
+        }
+
+        if (accountType === 'clan') {
+          const approved = user.clan_approved === true || user.clan_approved === 'true';
+          if (!approved) {
+            setMsg(loginMsg, '⚠️ Your clan is NOT yet on the APPROVED CLAN LIST. Reservation will be restricted.', 'info');
+          }
+        }
+
+        setUserSession(user, accountType);
+        logActivity(`${accountType === 'clan' ? 'Clan' : 'Admin'} Login`, `${accountType === 'clan' ? 'Clan' : 'Admin'} account "${user.username}" logged in.`, 'AUTH', user.username, accountType);
+        if (accountType === 'clan') {
+          window.location.href = 'scrim_reservation.html';
+        } else if (selectedRole === 'admin' || accountType === 'admin' || user.role === 'admin' || user.account_type === 'admin') {
+          sessionStorage.setItem('codmAdminAuth', '1');
+          localStorage.setItem('codmAdminAuth', '1');
+          window.location.href = 'admin_dashboard.html';
+        } else {
+          window.location.href = 'user_dashboard.html';
+        }
+      } catch (err) {
+        console.error(err);
+        setMsg(loginMsg, 'Connection error. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    }
+
+    // --- CLAN REGISTER ---
+    async function doClanRegister() {
+      const clanTag = (document.getElementById('regClanTag').value || '').trim().toUpperCase();
+      const clanName = (document.getElementById('regClanName').value || '').trim();
+      const leader = (document.getElementById('regClanLeader').value || '').trim();
+      const username = (document.getElementById('regClanUsername').value || '').trim();
+      const password = document.getElementById('regClanPass').value;
+      const confirm = document.getElementById('regClanConfirm').value;
+      const btn = document.getElementById('registerClanBtn');
+
+      if (!clanTag || !clanName || !leader || !username || !password || !confirm) {
+        setMsg(registerClanMsg, 'Please fill in all required (*) fields.', 'error');
+        return;
+      }
+      if (clanTag.length < 1 || clanTag.length > 5) {
+        setMsg(registerClanMsg, 'Clan tag must be 1 to 5 characters only.', 'error');
+        return;
+      }
+      if (!/^[A-Z0-9]+$/.test(clanTag)) {
+        setMsg(registerClanMsg, 'Clan tag can only contain letters and numbers (no spaces or symbols).', 'error');
+        return;
+      }
+      if (username.length < 3) {
+        setMsg(registerClanMsg, 'Username must be at least 3 characters.', 'error');
+        return;
+      }
+      if (password.length < 6) {
+        setMsg(registerClanMsg, 'Password must be at least 6 characters.', 'error');
+        return;
+      }
+      if (password !== confirm) {
+        setMsg(registerClanMsg, 'Passwords do not match.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Creating clan account...';
+      setMsg(registerClanMsg, '');
+
+      try {
+        const clans = await fetchClans();
+        if (clans.some(c => normalize(c.username) === normalize(username))) {
+          setMsg(registerClanMsg, 'Username is already taken.', 'error');
+          return;
+        }
+        if (clans.some(c => normalize(c.clan_tag) === normalize(clanTag))) {
+          setMsg(registerClanMsg, `Clan tag "${clanTag}" already has an account.`, 'error');
+          return;
+        }
+
+        const users = await fetchUsers();
+        if (users.some(u => normalize(u.username) === normalize(username))) {
+          setMsg(registerClanMsg, 'Username is already in use (user list).', 'error');
+          return;
+        }
+
+        const newClan = {
+          id: crypto.randomUUID(),
+          clan_tag: clanTag,
+          clan_name: clanName,
+          clan_handler: leader,
+          username,
+          password: await hashPassword(password),
+          status: 'pending approval',
+          clan_approved: false,
+          allowed_times: ['6pm', '8pm', '10pm'],
+          account_type: 'clan',
+          created_at: new Date().toISOString(),
+        };
+
+        clans.push(newClan);
+        const saved = await saveClans(clans);
+        if (!saved) {
+          setMsg(registerClanMsg, 'Failed to create clan account. Please try again.', 'error');
+          return;
+        }
+
+        logActivity('Clan Register', `New clan account registered: "${clanTag}" / "${clanName}" - Pending Approval`, 'AUTH', username, 'clan');
+
+        setMsg(registerClanMsg, '✅ Clan account created! Pending admin approval. You will be notified once verified.', 'success');
+        document.getElementById('regClanTag').value = '';
+        document.getElementById('regClanName').value = '';
+        document.getElementById('regClanLeader').value = '';
+        document.getElementById('regClanUsername').value = '';
+        document.getElementById('regClanPass').value = '';
+        document.getElementById('regClanConfirm').value = '';
+        setTimeout(() => { switchTab('login'); switchAccountType('clan'); }, 3000);
+      } catch (err) {
+        console.error(err);
+        setMsg(registerClanMsg, 'Connection error. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🛡️ Create Clan Account';
+      }
+    }
+
+    async function logActivity(action, details, context = 'AUTH', actorOverride = null, roleOverride = null) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.app_system_logs&select=value`, {
+          headers: supabaseHeaders()
+        });
+        let logs = [];
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data[0] && data[0].value) {
+            try { logs = JSON.parse(data[0].value); } catch (e) { logs = []; }
+          }
+        }
+        if (!Array.isArray(logs)) logs = [];
+        const actorName = actorOverride || sessionStorage.getItem('codmUsername') || 'System';
+        const actorRole = roleOverride || sessionStorage.getItem('codmUserRole') || 'user';
+        const newEntry = {
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2)),
+          timestamp: new Date().toISOString(),
+          actor: actorName,
+          role: actorRole,
+          action: action,
+          details: details,
+          context: (context || 'AUTH').toUpperCase()
+        };
+        logs.unshift(newEntry);
+        if (logs.length > 500) logs = logs.slice(0, 500);
+        await fetch(`${SUPABASE_URL}/rest/v1/config`, {
+          method: 'POST',
+          headers: {
+            ...supabaseHeaders(),
+            Prefer: 'resolution=merge-duplicates, return=minimal'
+          },
+          body: JSON.stringify({ key: 'app_system_logs', value: JSON.stringify(logs) })
+        });
+      } catch (e) {
+        console.error('logActivity error:', e);
+      }
+    }
+
+    // --- USER REGISTER ---
+    async function doRegister() {
+      const username = (document.getElementById('regUsername').value || '').trim();
+      const email = (document.getElementById('regEmail').value || '').trim();
+      const password = document.getElementById('regPass').value;
+      const confirm = document.getElementById('regConfirm').value;
+      const btn = document.getElementById('registerBtn');
+
+      if (!username || !email || !password || !confirm) {
+        setMsg(registerMsg, 'Please fill in all fields.', 'error');
+        return;
+      }
+      if (username.length < 3) {
+        setMsg(registerMsg, 'Username must be at least 3 characters.', 'error');
+        return;
+      }
+      if (!isValidEmail(email)) {
+        setMsg(registerMsg, 'Please enter a valid email address.', 'error');
+        return;
+      }
+      if (password.length < 6) {
+        setMsg(registerMsg, 'Password must be at least 6 characters.', 'error');
+        return;
+      }
+      if (password !== confirm) {
+        setMsg(registerMsg, 'Passwords do not match.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+      setMsg(registerMsg, '');
+
+      try {
+        const users = await fetchUsers();
+        if (users.some(u => normalize(u.username) === normalize(username))) {
+          setMsg(registerMsg, 'Username is already taken.', 'error');
+          return;
+        }
+        if (users.some(u => normalize(u.email) === normalize(email))) {
+          setMsg(registerMsg, 'Email is already registered.', 'error');
+          return;
+        }
+
+        const newUser = {
+          id: crypto.randomUUID(),
+          username,
+          email,
+          password: await hashPassword(password),
+          status: 'pending approval',
+          created_at: new Date().toISOString(),
+        };
+
+        users.push(newUser);
+        const saved = await saveUsers(users);
+        if (!saved) {
+          setMsg(registerMsg, 'Failed to create account. Please try again.', 'error');
+          return;
+        }
+
+        logActivity('User Register', `New account registered: "${username}" (${email}) - Pending Approval`, 'AUTH', username, 'user');
+
+        setMsg(registerMsg, 'Account created! Your account is pending admin approval.', 'success');
+        document.getElementById('regUsername').value = '';
+        document.getElementById('regEmail').value = '';
+        document.getElementById('regPass').value = '';
+        document.getElementById('regConfirm').value = '';
+        setTimeout(() => switchTab('login'), 2000);
+      } catch (err) {
+        setMsg(registerMsg, 'Connection error. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+      }
+    }
+
+    // --- ADMIN LOGIN ---
+    async function doAdminLogin() {
+      const val = (document.getElementById('adminKey').value || '').trim();
+      const btn = document.getElementById('adminLoginBtn');
+
+      if (!val) {
+        setMsg(adminMsg, 'Please enter the admin key.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Verifying...';
+      setMsg(adminMsg, '');
+
+      try {
+        let isValid = (val === 'JJmabbagu11');
+
+        if (!isValid) {
+          setMsg(adminMsg, 'Incorrect admin key.', 'error');
+          return;
+        }
+        sessionStorage.removeItem('codmUserAuth');
+        localStorage.removeItem('codmUserAuth');
+        sessionStorage.removeItem('codmUserId');
+        localStorage.removeItem('codmUserId');
+        sessionStorage.setItem('codmUsername', 'Admin');
+        localStorage.setItem('codmUsername', 'Admin');
+        sessionStorage.setItem('codmUserEmail', 'admin@system');
+        localStorage.setItem('codmUserEmail', 'admin@system');
+        sessionStorage.setItem('codmUserStatus', 'active');
+        localStorage.setItem('codmUserStatus', 'active');
+        sessionStorage.setItem('codmUserRole', 'admin');
+        localStorage.setItem('codmUserRole', 'admin');
+        sessionStorage.setItem('codmAdminAuth', '1');
+        localStorage.setItem('codmAdminAuth', '1');
+        logActivity('Admin Login', 'Administrator signed in with Master Key.', 'AUTH', 'Admin', 'admin');
+        window.location.href = 'admin_dashboard.html';
+      } catch (err) {
+        setMsg(adminMsg, 'Connection error. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Continue as Admin';
+      }
+    }
+
+    document.getElementById('loginBtn').onclick = doUserLogin;
+    document.getElementById('registerBtn').onclick = doRegister;
+    document.getElementById('registerClanBtn').onclick = doClanRegister;
+    document.getElementById('adminLoginBtn').onclick = doAdminLogin;
+
+    document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doUserLogin(); });
+    document.getElementById('regConfirm').addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+    document.getElementById('regClanConfirm').addEventListener('keydown', e => { if (e.key === 'Enter') doClanRegister(); });
+    document.getElementById('adminKey').addEventListener('keydown', e => { if (e.key === 'Enter') doAdminLogin(); });
+
+    // Redirect if already logged in
+    const storedUserRole = sessionStorage.getItem('codmUserRole') || localStorage.getItem('codmUserRole');
+    const storedAdminRole = sessionStorage.getItem('codmUserRole') || localStorage.getItem('codmUserRole');
+    const userStatus = sessionStorage.getItem('codmUserStatus') || localStorage.getItem('codmUserStatus');
+    const hasAdmin = (sessionStorage.getItem('codmAdminAuth') === '1' || localStorage.getItem('codmAdminAuth') === '1') &&
+      (storedAdminRole === 'admin' || sessionStorage.getItem('codmUsername') === 'Admin' || localStorage.getItem('codmUsername') === 'Admin');
+    const hasUser = (sessionStorage.getItem('codmUserAuth') === '1' || localStorage.getItem('codmUserAuth') === '1') &&
+      userStatus === 'active';
+    const acctType = sessionStorage.getItem('codmAccountType') || localStorage.getItem('codmAccountType');
+
+    if (hasAdmin) {
+      window.location.href = 'admin_dashboard.html';
+    } else if (hasUser) {
+      if (acctType === 'clan') {
+        window.location.href = 'scrim_reservation.html';
+      } else {
+        window.location.href = 'user_dashboard.html';
+      }
+    }
+
+    setTimeout(() => document.getElementById('loginUser').focus(), 50);
+  </script>
+</body>
+
+</html>

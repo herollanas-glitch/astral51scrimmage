@@ -4690,8 +4690,7 @@
           // Re-calculate local MVP stats instantly for preview
           const recalcStats = () => {
             let maxKills = 0;
-            let maxSingleRound = 0;
-            let maxName = 'PENDING TO UPDATE';
+            let maxNames = [];
             const top1TeamName = top3[0] ? top3[0].clan : null;
 
             const playerRows = adminPlayersBody.querySelectorAll('tr');
@@ -4719,18 +4718,16 @@
               if (pTeam === top1TeamName && hasAny && pName) {
                 if (sum > maxKills) {
                   maxKills = sum;
-                  maxSingleRound = singleMax;
-                  maxName = pName;
-                } else if (sum === maxKills && singleMax > maxSingleRound && sum > 0) {
-                  maxSingleRound = singleMax;
-                  maxName = pName;
+                  maxNames = [pName];
+                } else if (sum === maxKills && sum > 0) {
+                  maxNames.push(pName);
                 }
               }
             });
             const adminSumMVP = document.getElementById('adminSumMVP');
             const adminPtsMVP = document.getElementById('adminPtsMVP');
             if (adminSumMVP && adminPtsMVP) {
-              adminSumMVP.textContent = maxName;
+              adminSumMVP.textContent = maxNames.length ? maxNames.join(' / ') : 'PENDING TO UPDATE';
               adminPtsMVP.textContent = maxKills > 0 ? (maxKills + ' KILLS') : '- KILLS';
             }
           };
@@ -4959,8 +4956,13 @@ SLOT {open_slots} -
 ‼️ 𝗪𝗥𝗢𝗡𝗚 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗙𝗢𝗥𝗠𝗔𝗧 = 𝗜𝗡𝗩𝗔𝗟𝗜𝗗
 
 @everyone`;
-      const text = applyTemplate(template, {
-        open_slots: openSlotNumbers.length ? openSlotNumbers.join(', ') : 'NONE'
+      const openSlotLines = openSlotNumbers.length
+        ? openSlotNumbers.map(slotNumber => `SLOT ${slotNumber} -`).join('\n')
+        : 'SLOT NONE -';
+      const expandedTemplate = template.replace(/SLOT\s*\{open_slots\}\s*-/g, openSlotLines);
+      const text = applyTemplate(expandedTemplate, {
+        open_slots: openSlotNumbers.length ? openSlotNumbers.join(', ') : 'NONE',
+        open_slot_lines: openSlotLines
       });
 
       try {
@@ -7293,7 +7295,7 @@ SLOT -
       copySlotsTemplate: `‼️𝑨51 𝑩𝑹 𝑺𝑪𝑹𝑰𝑴𝑴𝑰𝑴𝑨𝑮𝑬‼️\n\n📅 𝐃𝐀𝐓𝐄: {date}\n⏰ 𝐒𝐂𝐇𝐄𝐃𝐔𝐋𝐄: {sched}\n🚪 OPEN ROOM: {open_room}\n🔓 OPEN SLOT NUMBERS: {open_slots}\n\n𝑺𝑳𝑶𝑻𝑺 𝑳𝑰𝑺𝑻 :\n{slot_list}\n\n{banned_list}\n\n𝚁𝚄𝙻𝙴𝚂! ⬇️\n{rules_url}`,
       copyTopTeamsTemplate: `👽𝐂𝐎𝐍𝐆𝐑𝐀𝐓𝐔𝐋𝐀𝐓𝐈𝐎𝐍𝐒 𝐓𝐎 𝐓𝐇𝐄 𝐓𝐎𝐏 𝐓𝐄𝐀𝐌𝐒 👽\n\n📅 𝐃𝐀𝐓𝐄: {date} | {sched}\n🥇 𝐓𝐎𝐏 𝟏: {top1}\n🥈 𝐓𝐎𝐏 𝟐: {top2}\n🥉 𝐓𝐎𝐏 𝟑: {top3}\n\n🎖️ 𝐌𝐕𝐏: {mvp}\n\n𝙋𝙇𝙀𝘼𝙎𝙀 𝙎𝙀𝙉𝘿 𝙔𝙊𝙐𝙍 𝙇𝙊𝐆𝙊𝙎 𝘼𝙉𝘿 𝙈𝙑𝙋 𝙋𝙄𝘾𝙎 𝙃𝙀𝙍𝙀.👽\n\n{rules_url}`,
       copyBannedListTemplate: `🚫 *A51 ASTRAL BANNED & WARNING TEAMS* 🚫\n\n⏰ *SCHEDULE:* {sched}\n\n🚫 *NO SHOW (5 SCRIMS BAN):*\n{no_show}\n‼️ *LATE CANCELLATION (3 SCRIMS BAN):*\n{late_cancel}\n⛔ *PERMANENT BANNED TEAMS:*\n{perm_banned}\n⚠️ *ACTIVE WARNINGS:*\n{warnings}\n\n📜 *RULES:* {rules_url}`,
-      openSlotTemplate: `🔓 𝗢𝗽𝗲𝗻 𝗦𝗹𝗼𝘁 🔓\n\nSLOT {open_slots} - \n\n👽 𝗙𝗜𝗥𝗦𝗧 𝗧𝗢 𝗘𝗗𝗜𝗧\n👽 𝗘𝗗𝗜𝗧𝗘𝗗 𝗜𝗦 𝗡𝗢𝗧 𝗔𝗟𝗟𝗢𝗪𝗘𝗗\n👽 𝗡𝗢𝗧 𝗔𝗟𝗜𝗚𝗡 𝗜𝗡 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗡𝗢𝗧 𝗖𝗢𝗨𝗡𝗧𝗘𝗗\n‼️ 𝗪𝗥𝗢𝗡𝗚 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗙𝗢𝗥𝗠𝗔𝗧 = 𝗜𝗡𝗩𝗔𝗟𝗜𝗗\n\n@everyone`,
+      openSlotTemplate: `🔓 𝗢𝗽𝗲𝗻 𝗦𝗹𝗼𝘁 🔓\n\n{open_slot_lines}\n\n👽 𝗙𝗜𝗥𝗦𝗧 𝗧𝗢 𝗘𝗗𝗜𝗧\n👽 𝗘𝗗𝗜𝗧𝗘𝗗 𝗜𝗦 𝗡𝗢𝗧 𝗔𝗟𝗟𝗢𝗪𝗘𝗗\n👽 𝗡𝗢𝗧 𝗔𝗟𝗜𝗚𝗡 𝗜𝗡 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗡𝗢𝗧 𝗖𝗢𝗨𝗡𝗧𝗘𝗗\n‼️ 𝗪𝗥𝗢𝗡𝗚 𝗡𝗜𝗖𝗞𝗡𝗔𝗠𝗘 𝗙𝗢𝗥𝗠𝗔𝗧 = 𝗜𝗡𝗩𝗔𝗟𝗜𝗗\n\n@everyone`,
       roomTemplate: `![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗥𝗢𝗨𝗡𝗗: 1 \n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗚𝗜𝗩𝗘 𝗦𝗟𝗢𝗧: ![❌](https://static.xx.fbcdn.net/images/emoji.php/v9/tdd/1/16/274c.png)\n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗟𝗢𝗖𝗞 𝗥𝗢𝗢𝗠 : 8:09\n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗧𝗜𝗠𝗘 𝗦𝗧𝗔𝗥𝗧: 8:10\n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗥𝗢𝗢𝗠 𝗜𝗗: \n![👽](https://static.xx.fbcdn.net/images/emoji.php/v9/td9/1/16/1f47d.png)𝗥𝗢𝗢𝗠 𝗣𝗔𝗦𝗦: \n\n![🗾](https://static.xx.fbcdn.net/images/emoji.php/v9/tcc/1/16/1f5fe.png) 𝙈𝘼𝙋: 𝑰𝑺𝑶-𝑩𝑶-𝑰𝑺𝑶\n \n-𝗡𝗢 𝗘𝗫𝗧𝗘𝗡𝗦𝗜𝗢𝗡\n-𝗡𝗢 𝗧.𝗢 𝗟𝗜𝗦𝗧 𝗨𝗦𝗘 𝗦𝗔𝗠𝗘 𝗔𝗩𝗔𝗧𝗔𝗥\n\n𝑵𝑶𝑻𝑬: 𝑳𝑽𝑳 250+ 𝑶𝑵𝗟𝒀\n𝑲𝒊𝒏𝒅𝒍𝒚 𝒕𝒂𝒌𝒆 𝑺𝒄𝒓𝒆𝒆𝒏𝒔𝒉𝒐𝒕 𝒊𝒇 𝒚𝒐𝒖 𝒔𝒆𝒆 𝒍𝒐𝒘 𝒍𝒗𝒍 𝒂𝒄𝒄𝒐𝒖𝒏𝒕.\n\n@everyone`
     };
 
@@ -7509,8 +7511,8 @@ SLOT -
       if (kmDisplay) kmDisplay.textContent = scoringState.killMultiplier || 2;
 
       // 5. Render Announcements & Public Banner
-      if (announcementsState.openSlotTemplate && !announcementsState.openSlotTemplate.includes('{open_slots}')) {
-        announcementsState.openSlotTemplate = announcementsState.openSlotTemplate.replace(/SLOT\s*-\s*/i, 'SLOT {open_slots} - ');
+      if (announcementsState.openSlotTemplate && !announcementsState.openSlotTemplate.includes('{open_slots}') && !announcementsState.openSlotTemplate.includes('{open_slot_lines}')) {
+        announcementsState.openSlotTemplate = announcementsState.openSlotTemplate.replace(/SLOT\s*-\s*/i, '{open_slot_lines}');
       }
       const gcTemplate = document.getElementById('gcAnnouncementTemplate');
       if (gcTemplate) gcTemplate.value = announcementsState.gcAnnouncementTemplate || '';

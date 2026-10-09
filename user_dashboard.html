@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1955,6 +1955,10 @@
                 <div class="metric-pill">
                   Unique clans: <span id="uniqueClans">0</span>
                 </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <label for="slotsDatePicker" style="font-size:11px; color:#94a3b8; font-weight:700;">SCRIM DATE:</label>
+                  <input type="date" id="slotsDatePicker" style="padding:4px 6px; border-radius:8px; width:130px;">
+                </div>
               </div>
             </div>
 
@@ -3027,8 +3031,8 @@
 
     async function logSystemActivity(action, details, context = 'GENERAL', actorOverride = null, roleOverride = null) {
       try {
-        const actor = actorOverride || sessionStorage.getItem('codmUsername') || 'User';
-        const role = roleOverride || sessionStorage.getItem('codmUserRole') || 'user';
+        const actor = actorOverride || sessionStorage.getItem('codmUsername') || localStorage.getItem('codmUsername') || 'User';
+        const role = roleOverride || sessionStorage.getItem('codmUserRole') || localStorage.getItem('codmUserRole') || 'user';
         const newEntry = {
           id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2)),
           timestamp: new Date().toISOString(),
@@ -3122,6 +3126,7 @@
     const copyTopTeamsBtn = document.getElementById('copyTopTeamsBtn');
     const saveAsImageBtn = document.getElementById('saveAsImageBtn');
     const scoreboardDatePicker = document.getElementById('scoreboardDatePicker');
+    const slotsDatePicker = document.getElementById('slotsDatePicker');
     const scoreboardHostedBy = document.getElementById('scoreboardHostedBy');
     const scoreboardTallyBy = document.getElementById('scoreboardTallyBy');
 
@@ -3172,6 +3177,80 @@
     let latestPlayersData = "[]";
     let adminPopupResolver = null;
     let currentSched = '8pm'; // DEFAULT VIEW
+
+    function localDateString(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getSelectedEventDate() {
+      return scoreboardDatePicker?.value || slotsDatePicker?.value || localDateString();
+    }
+
+    function scoreboardConfigKey(schedule = currentSched, eventDate = getSelectedEventDate()) {
+      return `${schedule}_${eventDate}_scoreboard_data`;
+    }
+
+    async function fetchLegacyScoreboardForDate(schedule, eventDate) {
+      const keys = `${schedule}_scoreboard_data,scoreboard_date`;
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/config?key=in.(${keys})&select=key,value`, {
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+      });
+      if (!res.ok) return [];
+      const rows = await res.json();
+      const savedDate = rows.find(row => row.key === 'scoreboard_date')?.value;
+      const legacyValue = rows.find(row => row.key === `${schedule}_scoreboard_data`)?.value;
+      if (savedDate !== eventDate || !legacyValue) return [];
+      try {
+        const parsed = JSON.parse(legacyValue);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function ensureSlotsForDate(schedule, eventDate) {
+      const query = `${SUPABASE_URL}/rest/v1/slots?select=id,slot_number&schedule_type=eq.${schedule}&event_date=eq.${eventDate}`;
+      const res = await fetch(query, { headers: supabaseHeaders() });
+      if (!res.ok) throw new Error('Unable to load dated slots. Apply the database schema update first.');
+      const existing = await res.json();
+      const existingNumbers = new Set(existing.map(slot => slot.slot_number));
+      const missing = [];
+      for (let slotNumber = 1; slotNumber <= MAX_SLOTS; slotNumber++) {
+        if (existingNumbers.has(slotNumber)) continue;
+        missing.push({
+          id: `${schedule}_${eventDate}_slot_${slotNumber}`,
+          slot_number: slotNumber,
+          schedule_type: schedule,
+          event_date: eventDate,
+          clan: '',
+          clan_logo: '',
+          cancel_key: ''
+        });
+      }
+      if (missing.length) {
+        const createRes = await fetch(`${SUPABASE_URL}/rest/v1/slots`, {
+          method: 'POST',
+          headers: { ...supabaseHeaders(), Prefer: 'resolution=ignore-duplicates,return=minimal' },
+          body: JSON.stringify(missing)
+        });
+        if (!createRes.ok) throw new Error('Unable to create slots for this date.');
+      }
+    }
+
+    if (slotsDatePicker) slotsDatePicker.value = localDateString();
+
+    function handleEventDateChange(source) {
+      const value = source.value || localDateString();
+      if (scoreboardDatePicker) scoreboardDatePicker.value = value;
+      if (slotsDatePicker) slotsDatePicker.value = value;
+      loadAdminSlots();
+    }
+
+    scoreboardDatePicker?.addEventListener('change', () => handleEventDateChange(scoreboardDatePicker));
+    slotsDatePicker?.addEventListener('change', () => handleEventDateChange(slotsDatePicker));
 
     let adminReserveTarget = 'scrim';
 
@@ -3464,7 +3543,9 @@
 
     async function loadAdminSlots() {
       try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/slots?select=id,slot_number,clan,clan_logo,schedule_type&schedule_type=eq.${currentSched}&order=slot_number.asc`, {
+        const eventDate = getSelectedEventDate();
+        await ensureSlotsForDate(currentSched, eventDate);
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/slots?select=id,slot_number,clan,clan_logo,schedule_type,event_date&schedule_type=eq.${currentSched}&event_date=eq.${eventDate}&order=slot_number.asc`, {
           headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
         });
         const data = await res.json();
@@ -3480,7 +3561,7 @@
         // Fetch current scoreboard data to persist inputs
         let fetchedScores = [];
         try {
-          const configRes = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.${currentSched}_scoreboard_data&select=value`, {
+          const configRes = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.${scoreboardConfigKey(currentSched, eventDate)}&select=value`, {
             headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
           });
           const configData = await configRes.json();
@@ -3488,7 +3569,7 @@
             const parsed = JSON.parse(configData[0].value);
             fetchedScores = Array.isArray(parsed) ? parsed : [];
           } else {
-            const scoreRes = await fetch(`${SUPABASE_URL}/rest/v1/scoreboard?schedule_type=eq.${currentSched}&select=*`, {
+            const scoreRes = await fetch(`${SUPABASE_URL}/rest/v1/scoreboard?schedule_type=eq.${currentSched}&event_date=eq.${eventDate}&select=*`, {
               headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
             });
             const scoreData = await scoreRes.json();
@@ -3496,15 +3577,16 @@
           }
         } catch (e) {
           console.warn('scoreboard config fetch failed, falling back to table:', e);
-          const scoreRes = await fetch(`${SUPABASE_URL}/rest/v1/scoreboard?schedule_type=eq.${currentSched}&select=*`, {
+          const scoreRes = await fetch(`${SUPABASE_URL}/rest/v1/scoreboard?schedule_type=eq.${currentSched}&event_date=eq.${eventDate}&select=*`, {
             headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
           });
           const scoreData = await scoreRes.json();
           fetchedScores = Array.isArray(scoreData) ? scoreData : [];
         }
+        if (!fetchedScores.length) fetchedScores = await fetchLegacyScoreboardForDate(currentSched, eventDate);
 
         // Use localStorage to persist the "Hidden" state across page refreshes
-        const isHidden = localStorage.getItem(`hideScoreHistory_${currentSched}`) === 'true';
+        const isHidden = localStorage.getItem(`hideScoreHistory_${currentSched}_${eventDate}`) === 'true';
         if (isHidden) {
           latestScoreboardData = [];
         } else {
@@ -3532,7 +3614,8 @@
     async function refreshScoreboardData({ showToast = false, customMessage = 'Scoreboard standings and Top 3 updated!' } = {}) {
       try {
         let data = [];
-        const configRes = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.${currentSched}_scoreboard_data&select=value`, {
+        const eventDate = getSelectedEventDate();
+        const configRes = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.${scoreboardConfigKey(currentSched, eventDate)}&select=value`, {
           headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
         });
         const configData = await configRes.json();
@@ -3544,15 +3627,16 @@
             console.warn('Config scoreboard JSON invalid, falling back to table:', e);
           }
         }
+        if (!data.length) data = await fetchLegacyScoreboardForDate(currentSched, eventDate);
         if (!data.length) {
-          const res = await fetch(`${SUPABASE_URL}/rest/v1/scoreboard?schedule_type=eq.${currentSched}&select=*`, {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/scoreboard?schedule_type=eq.${currentSched}&event_date=eq.${eventDate}&select=*`, {
             headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
           });
           if (!res.ok) throw new Error(`Scoreboard fetch failed: ${res.status}`);
           const json = await res.json();
           data = Array.isArray(json) ? json : [];
         }
-        const isHidden = localStorage.getItem(`hideScoreHistory_${currentSched}`) === 'true';
+        const isHidden = localStorage.getItem(`hideScoreHistory_${currentSched}_${eventDate}`) === 'true';
         latestScoreboardData = isHidden ? [] : data;
         renderView();
         if (showToast) showAdminToast(customMessage, 'success');
@@ -3581,6 +3665,7 @@
         });
         if (!res.ok) throw new Error(`Server error ${res.status}: ${await res.text()}`);
         const rows = await res.json();
+        const previousEventDate = getSelectedEventDate();
         let isOp = 'false', sStart = '', sEnd = '';
         rows.forEach(r => {
           if (r.key === `${currentSched}_is_open`) isOp = r.value;
@@ -3589,14 +3674,17 @@
 
           // Also pre-fill the date picker if it exists
           if (r.key === 'scoreboard_date' && scoreboardDatePicker && !scoreboardDatePicker.value) {
-            scoreboardDatePicker.value = r.value || new Date().toISOString().slice(0, 10);
+            scoreboardDatePicker.value = r.value || localDateString();
+            if (slotsDatePicker) slotsDatePicker.value = scoreboardDatePicker.value;
           }
         });
 
         // Set default date if null
         if (scoreboardDatePicker && !scoreboardDatePicker.value) {
-          scoreboardDatePicker.value = new Date().toISOString().slice(0, 10);
+          scoreboardDatePicker.value = localDateString();
+          if (slotsDatePicker) slotsDatePicker.value = scoreboardDatePicker.value;
         }
+        if (getSelectedEventDate() !== previousEventDate) await loadAdminSlots();
 
         const val = isOp ? String(isOp).toLowerCase() : 'false';
         const isOpenManual = val === '1' || val === 'true' || val === 'yes';
@@ -4453,7 +4541,7 @@
 
       if (isActuallyOpen && remaining > 0) {
         text += `👇 *RESERVE YOUR SLOT HERE:*\n`;
-        text += `${siteLink}?sched=${currentSched}\n`;
+        text += `${siteLink}?sched=${currentSched}&date=${encodeURIComponent(getSelectedEventDate())}\n`;
       } else if (remaining === 0) {
         text += `🚫 *STATUS:* 𝑺𝑳𝑶𝑻𝑺 𝑨𝑹𝑬 𝑭𝑼𝑳𝑳! 🚫\n`;
         text += `Wait for the next session announcement.\n`;
@@ -4673,8 +4761,7 @@
     });
 
     const savePlayersBtn = document.getElementById('savePlayersBtn');
-    if (savePlayersBtn) {
-      savePlayersBtn.onclick = async () => {
+    async function savePlayerStats({ showToast = true } = {}) {
         savePlayersBtn.disabled = true;
         savePlayersBtn.textContent = 'Saving...';
         const inputs = document.querySelectorAll('.player-input');
@@ -4700,18 +4787,19 @@
             body: JSON.stringify({ key: `${currentSched}_players_data`, value: jsonStr })
           });
           if (res.ok) {
-            showAdminToast(`Player Stats Saved!`, 'success');
+            if (showToast) showAdminToast(`Player Stats Saved!`, 'success');
             latestPlayersData = jsonStr;
           } else {
             showAdminToast('Failed to save players.', 'error');
           }
         } catch (e) {
-          showAdminToast('Error saving players.', 'error');
+          showAdminToast('Failed to save players.', 'error');
         }
         savePlayersBtn.disabled = false;
         savePlayersBtn.textContent = 'Save Stats';
-      };
-    }
+      }
+
+    if (savePlayersBtn) savePlayersBtn.onclick = () => savePlayerStats();
 
     if (refreshScoreboardBtn) {
       refreshScoreboardBtn.onclick = async () => {
@@ -4721,23 +4809,35 @@
 
     saveScoreboardBtn.onclick = async () => {
       const rows = [];
+      const selectedDate = getSelectedEventDate();
+      const sRoundsCount = getRoundsForSchedule(currentSched);
+      const minCells = 2 + (sRoundsCount * 2) + 1;
       scoreboardBody.querySelectorAll('tr').forEach(tr => {
         const cells = tr.querySelectorAll('td');
-        if (cells.length < 9) return;
-        const team = cells[1].textContent;
+        if (cells.length < minCells) return;
+        const team = cells[1].textContent.trim();
         const getVal = (idx) => {
           const v = cells[idx].querySelector('input')?.value.trim();
           return v === '' ? null : v;
         };
-        rows.push({
-          team, r1: getVal(2), pp1: getVal(3), r2: getVal(4), pp2: getVal(5), r3: getVal(6), pp3: getVal(7), total: getVal(8),
-          schedule_type: currentSched
-        });
+        if (!team || team === '—') return;
+        const row = {
+          id: crypto.randomUUID ? crypto.randomUUID() : `${currentSched}_${selectedDate}_${Date.now()}_${rows.length}`,
+          team,
+          total: getVal(2 + (sRoundsCount * 2)),
+          schedule_type: currentSched,
+          event_date: selectedDate
+        };
+        for (let r = 1; r <= sRoundsCount; r++) {
+          row['r' + r] = getVal(2 + ((r - 1) * 2));
+          row['pp' + r] = getVal(2 + ((r - 1) * 2) + 1);
+        }
+        rows.push(row);
       });
 
       if (!rows.length) return showAdminToast("Nothing to save.", 'info');
       try {
-        await fetch(`${SUPABASE_URL}/rest/v1/scoreboard?schedule_type=eq.${currentSched}`, {
+        await fetch(`${SUPABASE_URL}/rest/v1/scoreboard?schedule_type=eq.${currentSched}&event_date=eq.${selectedDate}`, {
           method: 'DELETE', headers: { ...supabaseHeaders(), 'Prefer': 'return=minimal' }
         });
         const res = await fetch(`${SUPABASE_URL}/rest/v1/scoreboard`, {
@@ -4748,7 +4848,7 @@
           const fallback = await fetch(`${SUPABASE_URL}/rest/v1/config`, {
             method: 'POST',
             headers: { ...supabaseHeaders(), 'Prefer': 'resolution=merge-duplicates, return=minimal' },
-            body: JSON.stringify({ key: `${currentSched}_scoreboard_data`, value: JSON.stringify(rows) })
+            body: JSON.stringify({ key: scoreboardConfigKey(currentSched, selectedDate), value: JSON.stringify(rows) })
           });
           if (!fallback.ok) {
             throw new Error(errorText || `HTTP ${res.status}`);
@@ -4756,7 +4856,6 @@
         }
 
         // Save the selected date
-        const selectedDate = scoreboardDatePicker.value || new Date().toISOString().slice(0, 10);
         await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.scoreboard_date`, {
           method: 'PATCH',
           headers: supabaseHeaders(),
@@ -4765,13 +4864,10 @@
 
         showAdminToast(`${currentSched.toUpperCase()} Scoreboard Saved!`, 'success');
         logSystemActivity('User Scoreboard Saved', `${currentSched.toUpperCase()} scoreboard record saved (${rows.length} teams, Date: ${selectedDate}).`, 'SCOREBOARD');
-        localStorage.removeItem(`hideScoreHistory_${currentSched}`);
+        localStorage.removeItem(`hideScoreHistory_${currentSched}_${selectedDate}`);
         latestScoreboardData = rows;
+        await savePlayerStats({ showToast: false });
         await refreshScoreboardData({ showToast: false });
-
-        if (savePlayersBtn && !savePlayersBtn.disabled) {
-          savePlayersBtn.click();
-        }
 
         fetch('https://api.github.com/repos/markanthonymanuel45-coder/A51-ASTRAL/dispatches', {
           method: 'POST',
@@ -4791,7 +4887,7 @@
       });
       if (!confirmed) return;
 
-      localStorage.setItem(`hideScoreHistory_${currentSched}`, 'true');
+      localStorage.setItem(`hideScoreHistory_${currentSched}_${getSelectedEventDate()}`, 'true');
       latestScoreboardData = [];
       renderView();
       showAdminToast(`${currentSched.toUpperCase()} dashboard history cleared. Refreshing won't bring it back.`, 'success');
@@ -4814,16 +4910,19 @@
     copyTopTeamsBtn.onclick = async () => {
       // Get data from the UI rows
       const rows = [];
+      const sRoundsCount = getRoundsForSchedule(currentSched);
+      const minCells = 2 + (sRoundsCount * 2) + 1;
       scoreboardBody.querySelectorAll('tr').forEach(tr => {
         const cells = tr.querySelectorAll('td');
-        if (cells.length < 9) return;
-        const team = cells[1].textContent;
-        const r1 = parseInt(cells[2].querySelector('input')?.value || '0', 10);
-        const r2 = parseInt(cells[4].querySelector('input')?.value || '0', 10);
-        const r3 = parseInt(cells[6].querySelector('input')?.value || '0', 10);
-        const total = parseInt(cells[8].querySelector('input')?.value || '0', 10);
+        if (cells.length < minCells) return;
+        const team = cells[1].textContent.trim();
+        let maxKills = 0;
+        for (let r = 1; r <= sRoundsCount; r++) {
+          const kills = parseInt(cells[2 + ((r - 1) * 2)].querySelector('input')?.value || '0', 10);
+          if (!isNaN(kills) && kills > maxKills) maxKills = kills;
+        }
+        const total = parseInt(cells[2 + (sRoundsCount * 2)].querySelector('input')?.value || '0', 10);
         if (team && team !== '—') {
-          const maxKills = Math.max(isNaN(r1) ? 0 : r1, isNaN(r2) ? 0 : r2, isNaN(r3) ? 0 : r3);
           rows.push({ team, total, maxKills });
         }
       });
@@ -4871,21 +4970,23 @@
 
     saveAsImageBtn.onclick = async () => {
       const rows = [];
+      const sRoundsCount = getRoundsForSchedule(currentSched);
+      const minCells = 2 + (sRoundsCount * 2) + 1;
       scoreboardBody.querySelectorAll('tr').forEach(tr => {
         const cells = tr.querySelectorAll('td');
-        if (cells.length < 9) return;
-        const team = cells[1].textContent;
+        if (cells.length < minCells) return;
+        const team = cells[1].textContent.trim();
         const getVal = (idx) => cells[idx].querySelector('input')?.value.trim() || '';
         if (team && team !== '—') {
-          const r1v = getVal(2); const r2v = getVal(4); const r3v = getVal(6);
-          rows.push({
-            team,
-            r1: r1v, pp1: getVal(3),
-            r2: r2v, pp2: getVal(5),
-            r3: r3v, pp3: getVal(7),
-            total: getVal(8),
-            maxKills: Math.max(parseInt(r1v, 10) || 0, parseInt(r2v, 10) || 0, parseInt(r3v, 10) || 0)
-          });
+          const row = { team, total: getVal(2 + (sRoundsCount * 2)), maxKills: 0 };
+          for (let r = 1; r <= 3; r++) {
+            const roundIndex = r <= sRoundsCount ? 2 + ((r - 1) * 2) : -1;
+            const kills = roundIndex >= 0 ? getVal(roundIndex) : '';
+            row['r' + r] = kills;
+            row['pp' + r] = roundIndex >= 0 ? getVal(roundIndex + 1) : '';
+            row.maxKills = Math.max(row.maxKills, parseInt(kills, 10) || 0);
+          }
+          rows.push(row);
         }
       });
 
@@ -5738,7 +5839,10 @@
         // --- SYSTEM & ROUNDS SETTINGS FUNCTIONS ---
     function getRoundsForSchedule(sched) {
       const key = sched ? `scrim_rounds_${sched.toLowerCase()}` : 'scrim_rounds';
-      if (sched && roundsState[key] !== undefined) {
+      if (sched) {
+        if (roundsState[key] === undefined) {
+          roundsState[key] = parseInt(roundsState.scrim_rounds, 10) || 3;
+        }
         return parseInt(roundsState[key], 10) || 3;
       }
       return parseInt(roundsState.scrim_rounds, 10) || 3;
@@ -5882,7 +5986,6 @@
       const currentR = getRoundsForSchedule(schedId);
       const newR = Math.max(1, Math.min(8, currentR + delta));
       roundsState[`scrim_rounds_${schedId.toLowerCase()}`] = newR;
-      roundsState.scrim_rounds = newR;
       renderSettingsUI();
       if (scoreboardView && scoreboardView.style.display !== 'none') {
         renderView();
@@ -6014,7 +6117,10 @@
 
     function getRoundsForSchedule(sched) {
       const key = sched ? `scrim_rounds_${sched.toLowerCase()}` : 'scrim_rounds';
-      if (sched && roundsState[key] !== undefined) {
+      if (sched) {
+        if (roundsState[key] === undefined) {
+          roundsState[key] = parseInt(roundsState.scrim_rounds, 10) || 3;
+        }
         return parseInt(roundsState[key], 10) || 3;
       }
       return parseInt(roundsState.scrim_rounds, 10) || 3;
@@ -6268,7 +6374,6 @@
       const currentR = getRoundsForSchedule(schedId);
       const newR = Math.max(1, Math.min(8, currentR + delta));
       roundsState[`scrim_rounds_${schedId.toLowerCase()}`] = newR;
-      roundsState.scrim_rounds = newR;
       renderSettingsUI();
       if (scoreboardView && scoreboardView.style.display !== 'none') {
         renderView();

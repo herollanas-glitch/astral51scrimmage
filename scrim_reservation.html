@@ -1,4 +1,4 @@
-﻿  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -850,6 +850,11 @@
     <div class="sched-switcher" id="schedSwitcher">
     </div>
 
+    <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin:0 0 14px;">
+      <label for="slotEventDate" style="font-weight:700;">SCRIM DATE</label>
+      <input type="date" id="slotEventDate" style="padding:8px 10px; border-radius:8px;">
+    </div>
+
     <div class="buttons">
       <button id="mineBtn">MINE SLOT ⚡</button>
       <button id="cancelBtn">CANCEL SLOT ✕</button>
@@ -1029,6 +1034,7 @@
     }
 
     const slotsEl = document.getElementById('slots');
+    const slotEventDate = document.getElementById('slotEventDate');
     const clanModal = document.getElementById('clanModal');
     const clanInput = document.getElementById('clanInput');
     const logoFile = document.getElementById('logoFile');
@@ -1043,6 +1049,22 @@
     const statusText = document.getElementById('statusText');
     const countdownText = document.getElementById('countdownText');
     const statusBanner = document.getElementById('statusBanner');
+
+    function localDateString(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getSelectedEventDate() {
+      return slotEventDate?.value || localDateString();
+    }
+
+    if (slotEventDate) {
+      slotEventDate.value = new URLSearchParams(window.location.search).get('date') || localDateString();
+      slotEventDate.addEventListener('change', loadSlots);
+    }
 
     const USERS_CONFIG_KEY = 'app_users';
 
@@ -1098,13 +1120,14 @@
       return h * 60;
     }
 
-    function isWithin1HourBeforeSlot(sched) {
+    function isWithin1HourBeforeSlot(sched, eventDate = getSelectedEventDate()) {
       const now = new Date();
-      const currentMins = now.getHours() * 60 + now.getMinutes();
       const slotMins = parseScheduleTimeMinutes(sched);
       if (slotMins === null) return false;
-      const oneHourBefore = slotMins - 60;
-      return currentMins >= oneHourBefore && currentMins < slotMins;
+      const [year, month, day] = eventDate.split('-').map(Number);
+      const slotDate = new Date(year, month - 1, day, Math.floor(slotMins / 60), slotMins % 60);
+      const minutesUntilSlot = (slotDate.getTime() - now.getTime()) / 60000;
+      return minutesUntilSlot >= 0 && minutesUntilSlot <= 60;
     }
 
     let currentLogoBase64 = '';
@@ -1445,7 +1468,8 @@
       const cancelAuth = canCancelOwnSlots();
       if (!cancelAuth.allowed) { showPopup(cancelAuth.reason); return; }
       try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/slots?select=id,slot_number,clan,clan_logo,cancel_key,schedule_type&schedule_type=eq.${currentSched}&order=slot_number.asc`, {
+        const eventDate = getSelectedEventDate();
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/slots?select=id,slot_number,clan,clan_logo,cancel_key,schedule_type&schedule_type=eq.${currentSched}&event_date=eq.${eventDate}&order=slot_number.asc`, {
           headers: supabaseHeaders()
         });
         const allSlots = res.ok ? await res.json() : [];
@@ -1530,7 +1554,9 @@
 
         if (!patchRes.ok) throw new Error('Database rejected cancellation');
 
-        logActivity('Public Slot Cancelled', `Slot ${slotNum} ("${clanName}") cancelled via PASSWORD verification (${currentSched.toUpperCase()}).`, 'SLOT', clanName, 'user');
+        const authContext = getAuthContext();
+        const actorName = authContext.username || localStorage.getItem('codmUsername') || clanName;
+        logActivity('Public Slot Cancelled', `Slot ${slotNum} ("${clanName}") cancelled via PASSWORD verification (${currentSched.toUpperCase()}).`, 'SLOT', actorName, authContext.accountType || 'user');
         showPopup('Cancelled!');
         document.getElementById('confirmModal').style.display = 'none';
         document.getElementById('cancelModal').style.display = 'none';
@@ -1813,7 +1839,7 @@
           return;
         }
 
-        const listRes = await fetch(`${SUPABASE_URL}/rest/v1/slots?select=id,slot_number,clan,clan_logo,cancel_key,schedule_type&schedule_type=eq.${currentSched}&order=slot_number.asc`, {
+        const listRes = await fetch(`${SUPABASE_URL}/rest/v1/slots?select=id,slot_number,clan,clan_logo,cancel_key,schedule_type&schedule_type=eq.${currentSched}&event_date=eq.${getSelectedEventDate()}&order=slot_number.asc`, {
           headers: supabaseHeaders()
         });
         if (!listRes.ok) throw new Error('Database error loading slots');
@@ -1866,7 +1892,9 @@
         }
 
         showPopup('Reserved!');
-        logActivity('Public Slot Reserved', `Slot ${empty.slot_number} reserved for clan "${clan}" (${currentSched.toUpperCase()}).`, 'SLOT', clan, 'user');
+        const authContext = getAuthContext();
+        const actorName = authContext.username || localStorage.getItem('codmUsername') || clan;
+        logActivity('Public Slot Reserved', `Slot ${empty.slot_number} reserved for clan "${clan}" (${currentSched.toUpperCase()}).`, 'SLOT', actorName, authContext.accountType || 'user');
         clanModal.style.display = 'none';
         loadPublicAnnouncementsAndConfig();`n    loadSlots();
       } catch (e) {
@@ -1912,9 +1940,40 @@
       }
     }
 
+    async function ensureSlotsForDate(schedule, eventDate) {
+      const query = `${SUPABASE_URL}/rest/v1/slots?select=id,slot_number&schedule_type=eq.${schedule}&event_date=eq.${eventDate}`;
+      const res = await fetch(query, { headers: supabaseHeaders() });
+      if (!res.ok) throw new Error('Unable to load dated slots. Apply the database schema update first.');
+      const existing = await res.json();
+      const existingNumbers = new Set(existing.map(slot => slot.slot_number));
+      const missing = [];
+      for (let slotNumber = 1; slotNumber <= MAX_SLOTS; slotNumber++) {
+        if (existingNumbers.has(slotNumber)) continue;
+        missing.push({
+          id: `${schedule}_${eventDate}_slot_${slotNumber}`,
+          slot_number: slotNumber,
+          schedule_type: schedule,
+          event_date: eventDate,
+          clan: '',
+          clan_logo: '',
+          cancel_key: ''
+        });
+      }
+      if (missing.length) {
+        const createRes = await fetch(`${SUPABASE_URL}/rest/v1/slots`, {
+          method: 'POST',
+          headers: { ...supabaseHeaders(), Prefer: 'resolution=ignore-duplicates,return=minimal' },
+          body: JSON.stringify(missing)
+        });
+        if (!createRes.ok) throw new Error('Unable to create slots for this date.');
+      }
+    }
+
     async function loadSlots() {
       try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/slots?select=id,slot_number,clan,clan_logo,cancel_key,schedule_type&schedule_type=eq.${currentSched}&order=slot_number.asc`, {
+        const eventDate = getSelectedEventDate();
+        await ensureSlotsForDate(currentSched, eventDate);
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/slots?select=id,slot_number,clan,clan_logo,cancel_key,schedule_type&schedule_type=eq.${currentSched}&event_date=eq.${eventDate}&order=slot_number.asc`, {
           headers: supabaseHeaders()
         });
         if (!res.ok) return;
@@ -1977,7 +2036,7 @@
                       });
                       if (patchRes.ok) {
                         showPopup('Logo updated successfully! ✅', 'success');
-                        logActivity('Logo Updated', `Clan logo updated for slot ${i} ("${s.clan}") — ${currentSched.toUpperCase()}.`, 'SLOT', ctx.clanTag || ctx.username, 'clan');
+                        logActivity('Logo Updated', `Clan logo updated for slot ${i} ("${s.clan}") — ${currentSched.toUpperCase()}.`, 'SLOT', ctx.username || ctx.clanTag, ctx.accountType || 'clan');
                         loadPublicAnnouncementsAndConfig();`n    loadSlots();
                       } else {
                         showPopup('Failed to update logo. Please try again.', 'error');
